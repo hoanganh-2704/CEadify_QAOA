@@ -46,7 +46,7 @@ Define nothing twice. These names exist in `starter_notebook.ipynb` and are test
 
 6. **Iterate on the local Aer simulator.** Use `Statevector` or `AerSimulator` with a fixed seed while developing. Submit to SV1 (`aws:aws:sim:sv1`) only for results the team will report.
 7. **Know the price.** A small SV1 job costs 0.375 qBraid credits; SV1 bills simulation time at 7.5 credits per minute. Batch thoughtfully, and print the job ID of every submission.
-8. **Never submit to a QPU** (device IDs containing `:qpu:`) without the team's explicit go-ahead for that specific job. QPU jobs cost far more.
+8. **Never submit to a QPU** (device IDs containing `:qpu:`) without the team's explicit go-ahead for that specific job. QPU jobs cost far more. Teams earn hardware credits by first running successfully on SV1, so get the SV1 result before proposing a hardware run, estimate its cost, and keep shots low.
 9. **Transpile before submitting** to `["rz", "sx", "x", "cx"]`, as `run_on_sv1` does. Custom gates such as `XXPlusYYGate` or open-controlled gates may not survive export otherwise.
 10. Watch the size. A 24-qubit statevector holds about 16.8 million amplitudes. Local optimization loops at that size are slow; prefer smaller encodings, fewer optimizer steps, or SV1 for the final evaluation.
 
@@ -64,7 +64,7 @@ Define nothing twice. These names exist in `starter_notebook.ipynb` and are test
 
 ### Helping the team learn
 
-17. Explain each step in plain words before writing the code for it. The goal of the event is understanding, and the Code understanding row of the rubric tests every team member.
+17. Explain each step in plain words before writing the code for it. The goal of the event is understanding, and the Code and understanding criterion of the rubric tests every team member.
 18. Keep a short log of what you generated and how it was checked. The team needs it for the AI use note in `SUBMISSION.md`.
 
 ## Useful directions

@@ -99,9 +99,12 @@ To submit to SV1 from your own machine, create an API key in your qBraid account
 - An SV1 job of the size in these notebooks costs **0.375 qBraid credits**. SV1 bills by simulation time at 7.5 credits per minute, so very deep or very wide circuits cost more.
 - SV1 simulates up to 34 qubits. The full one-hot encoding of the four-cube puzzle needs 24 qubits, which SV1 handles easily. A laptop simulator slows down at that size, which is one reason to look for a smaller encoding.
 - Debug on the local Aer simulator first. Send a circuit to SV1 once it works.
-- This challenge runs on simulators only. The real-hardware session is Friday evening, on your own IBM Quantum account.
-
 **Getting credits.** The organizers give each team a qBraid promo code at kickoff. To redeem it, open **Account → Wallet** in [account.qbraid.com](https://account.qbraid.com/account/wallet), choose a credit amount, enter the code in the **Promo code** field, and complete the purchase.
+
+**Earning time on real quantum hardware.** Teams that submit working jobs to SV1 through qBraid can earn extra credits to try their circuits on real quantum devices. Show a qBraid mentor the job IDs of your successful SV1 runs to claim them. Hardware runs are optional. Real devices add noise, so expect a lower success rate than on SV1, and report both.
+
+- A QPU job costs far more than an SV1 job. Check the price on the device page before you submit, and keep shots low.
+- Transpile for the device and keep circuits shallow. Deep QAOA circuits lose most of their signal to noise.
 
 ## Submitting
 

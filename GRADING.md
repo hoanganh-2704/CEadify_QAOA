@@ -29,42 +29,41 @@ You may start from a copy of this challenge repository. If you do, delete what y
 
 ## Deliverables
 
-Submit all five, inside the repository. Missing items cost points in the matching rubric rows.
+Submit all five, inside the repository. Missing items cost points in the matching rubric criteria.
 
 | # | Deliverable | What it must contain |
 |---|---|---|
 | 1 | **Slides** (`slides.pdf` or `slides.pptx`, at most 8 slides; export Google Slides to PDF) | The problem, your encoding, your algorithm, your results, and one thing you would try next. |
 | 2 | **Working code** (a notebook, plus any `.py` files it imports) | Runs from top to bottom in qBraid Lab with no edits. Saved **with outputs**, so judges can read the results without running it. Fixed random seeds where you use randomness. |
 | 3 | **Write-up** (a `SUBMISSION.md`, one page) | Team members, which level you reached (warm-up, core, bonus), how to run your code, and the results table below. |
-| 4 | **qBraid job IDs** | The IDs of the SV1 jobs behind your reported results, listed in `SUBMISSION.md`. |
+| 4 | **qBraid job IDs** | The IDs of the jobs behind your reported results, listed in `SUBMISSION.md`: your SV1 jobs, plus any real-hardware (QPU) jobs you ran with earned credits. |
 | 5 | **AI use note** (a section of `SUBMISSION.md`) | Which AI tools you used, for which parts, and how you checked their output. Using AI is allowed and encouraged. Not disclosing it is not. |
 
 ### Results table
 
 Put this table in `SUBMISSION.md`, one row per experiment you report.
 
-| Puzzle (N cubes) | Encoding | Qubits | Two-qubit gates (after transpiling) | Depth | Shots | P(correct tower) | Random-guess baseline | qBraid job ID |
-|---|---|---|---|---|---|---|---|---|
+| Puzzle (N cubes) | Encoding | Device | Qubits | Two-qubit gates (after transpiling) | Depth | Shots | P(correct tower) | Random-guess baseline | qBraid job ID |
+|---|---|---|---|---|---|---|---|---|---|
 
 - **P(correct tower)** is the fraction of shots that decode to a solved tower. Check every decoded tower with a classical checker, such as `solves` in the starter notebook.
 - **Random-guess baseline** is the probability that a uniformly random bitstring of your encoding is a solved tower. It tells the judges how much your algorithm adds.
 - Count two-qubit gates after `transpile(qc, basis_gates=["rz", "sx", "x", "cx"])`, so every team counts the same way.
+- **Device** is the qBraid device ID, such as `aws:aws:sim:sv1`. If you also ran on real hardware, add a row for it next to the matching SV1 row.
 
 ## Rubric
 
-Judges score each row from 1 to 4 and multiply by the weight. The maximum is 100 points, plus up to 10 bonus points.
+Five criteria, 100 points in total, plus up to 10 bonus points. Judges can give any score from 0 up to a criterion's points. The three columns describe roughly a third, two thirds and full marks. A missing deliverable scores 0 in its criterion.
 
-| Row | Weight | 1 · Beginning | 2 · Developing | 3 · Proficient | 4 · Exemplary |
-|---|---|---|---|---|---|
-| **Problem understanding and encoding** | 5 | Restates the puzzle but the encoding is missing or wrong. | Encoding works for part of the puzzle, such as the warm-up half. | A correct encoding of the full puzzle, with a clear qubit count. | A correct encoding that is smaller or more natural than the starter's, with the reasoning shown. |
-| **Quantum approach** | 6 | A circuit runs but does not target the puzzle. | Runs the warm-up, or a full-puzzle attempt that rarely finds a tower. | Finds a full solved tower on SV1, measurably above the random baseline. | Finds a tower reliably, and explains why the design choices (initial state, mixer, ansatz, optimizer) help. |
-| **Classical benchmarking and verification** | 4 | No classical check. | Checks the final answer by hand or by eye. | Confirms classically that the known answer is the lowest cost and that nothing wrong ties with it. Reports the random baseline. | Also compares cost and time against brute force or a classical heuristic, honestly, including where classical wins. |
-| **Results and analysis** | 3 | Reports a number with no context. | Reports success rates without resource counts. | Fills the results table: qubits, gates, depth, shots, success rate and baseline. | Shows how results change with a design choice (depth p, shots, encoding) and explains the trend. |
-| **Code understanding** | 3 | Cannot explain the code in the Q&A. | Explains parts, relies on the starter for the rest. | Every team member can explain what each block does. | Explains limits and failure cases, and answers "what if" questions with confidence. |
-| **Clarity of presentation** | 3 | Slides are hard to follow or run long. | The story is there but key steps are missing. | Clear problem, method and results in 5 minutes. | A clear story that a beginner in the room could follow, with honest takeaways. |
-| **Code quality and reproducibility** | 1 | Code does not run. | Runs with edits or missing outputs. | Runs top to bottom in qBraid Lab with saved outputs and seeds. | Also clean and commented where it helps, with reusable functions. |
+| Criterion | Points | Starting | Solid | Excellent |
+|---|---|---|---|---|
+| **Encoding and quantum approach** | 30 | Runs the warm-up, or encodes only part of the puzzle. | A correct encoding of the full puzzle that finds a solved tower on SV1, above the random baseline. | Finds towers reliably and explains why its design choices help, or uses a smaller encoding than the starter's. |
+| **Classical checks** | 20 | Checks the final answer by eye. | Confirms that the known answer is the unique lowest cost, and reports the random baseline. | Also compares honestly with brute force or a classical method, including where classical wins. |
+| **Results** | 20 | A success rate with no context. | A complete results table. | Shows how results change with one design choice (depth, shots, encoding, or SV1 against real hardware) and explains why. |
+| **Code and understanding** | 15 | Code needs edits to run, or the team can explain only parts of it. | Runs top to bottom with saved outputs, and every member can explain each block. | Also explains limits and failure cases, and answers "what if" questions with confidence. |
+| **Presentation** | 15 | Hard to follow, or runs long. | A clear problem, method and result in 5 minutes. | A beginner in the room could follow it, and the takeaways are honest. |
 
-Row weights sum to 25, so a row's points are weight times level, and four times 25 gives the 100-point maximum.
+A real-hardware run is optional. It earns credit through the **Results** row when you compare it with SV1, not by itself.
 
 ### Bonus: N cubes and N colours (up to 10 points)
 
@@ -85,4 +84,4 @@ Use `make_puzzle` and `count_answers` from the starter notebook to make puzzles,
 
 ## Tie-breaks
 
-Ties are broken by the Classical benchmarking row, then the Quantum approach row, then the judges' vote.
+Ties are broken by the Classical checks score, then the Encoding and quantum approach score, then the judges' vote.
