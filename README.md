@@ -2,8 +2,6 @@
 
 The qBraid challenge at **Qiskit Fall Fest Connecticut 2026**, hosted by UConn Quantum Computing at the University of Connecticut, Storrs. Hacking runs on Saturday, October 17, 2026.
 
-[<img src="https://qbraid-static.s3.amazonaws.com/logos/Launch_on_qBraid_white.png" width="150">](https://account.qbraid.com/launch?gitHubUrl=https://github.com/qBraid/uconn-fall-fest-2026-challenge)
-
 Event page: [account.qbraid.com/hackathons/2026/uconn-fallfest](https://account.qbraid.com/hackathons/2026/uconn-fallfest)
 
 <picture>
@@ -77,8 +75,6 @@ New to quantum computing? Do the resources in order before the starter notebook.
 3. Select **Qiskit Fall Fest Connecticut 2026** in the event list (or **View Details** on its map pin) to open the hackathon page, then go to **Challenges**.
 4. On the Instant Insanity challenge card, click **Launch on qBraid**. qBraid Lab opens and clones this repository.
 5. Open `starter_notebook.ipynb` and run the cells from the top. The first cell installs anything missing.
-
-The **Launch on qBraid** button at the top of this page opens the same repository.
 
 Inside qBraid Lab your credentials load automatically, so the SV1 cells submit real jobs with no setup. Follow your jobs on the [quantum jobs page](https://account.qbraid.com/quantum-jobs).
 
