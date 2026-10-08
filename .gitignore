@@ -1,0 +1,15 @@
+# Credentials: never commit API keys or tokens in any form.
+.qbraid/
+.qiskit/
+
+# Python and Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
