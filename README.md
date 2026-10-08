@@ -2,15 +2,27 @@
 
 The qBraid challenge at **Qiskit Fall Fest Connecticut 2026**, hosted by UConn Quantum Computing at the University of Connecticut, Storrs. Hacking runs on Saturday, October 17, 2026.
 
-[<img src="https://qbraid-static.s3.amazonaws.com/logos/Launch_on_qBraid_white.png" width="150">](https://account.qbraid.com/launch?gitHubUrl=https://github.com/qBraid/fall-fest-ct-2026-challenge)
+[<img src="https://qbraid-static.s3.amazonaws.com/logos/Launch_on_qBraid_white.png" width="150">](https://account.qbraid.com/launch?gitHubUrl=https://github.com/qBraid/uconn-fall-fest-2026-challenge)
 
 Event page: [account.qbraid.com/hackathons/2026/uconn-fallfest](https://account.qbraid.com/hackathons/2026/uconn-fallfest)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/instant-insanity-dark.png">
+  <img alt="The four challenge cubes drawn as unfolded crosses, next to a tower where the front, right and left sides each show red, green, blue and yellow once, but the back shows red twice." src="assets/instant-insanity-light.png">
+</picture>
 
 ## The puzzle
 
 You get four cubes. Each face is painted one of four colours. Stack the cubes into a tower so that every colour shows exactly once on each of the four sides: front, back, left and right.
 
 There are 331,776 ways to stack the four cubes. Only 8 of them work, and those 8 are one tower seen from different angles. People have sold this puzzle as *Instant Insanity* since the 1960s, because it is so hard to solve by hand.
+
+Get a feel for it before you code. IonQ built two interactive pages for the original challenge:
+
+- [Instant Insanity, interactive](https://instantinsanity.z20.web.core.windows.net/): turn the cubes and stack them yourself.
+- [The cubes as a network of switches](https://instantinsanity.z20.web.core.windows.net/switches.html): a 5-qubit-per-cube encoding of the cube rotations.
+
+Those pages may paint their cubes differently from the four in this repository. The rules are the same.
 
 The puzzle is a **constraint problem**: many choices, a few rules, and very few choices that obey every rule. Scheduling, routing and chip layout problems have the same shape. Quantum optimization algorithms such as QAOA attack them by turning the rules into an energy and searching for the lowest energy state.
 
@@ -26,7 +38,7 @@ Solve the puzzle with a quantum algorithm, run it through qBraid, and explain wh
 
 The general N-cube question is NP-complete (Robertson and Munro, 1978): no one knows a method that stays fast as N grows. N will be small on today's simulators. What we want to see is whether your idea **generalizes**, and how its cost grows.
 
-Teams of all levels are welcome. A team that finishes the warm-up and one clear extension, with honest classical checks, can score well. See [GRADING.md](GRADING.md).
+Teams have 2 to 4 people, and every level is welcome. A team that finishes the warm-up and one clear extension, with honest classical checks, can score well. See [GRADING.md](GRADING.md).
 
 ### What this challenge is for
 
@@ -38,15 +50,20 @@ Teams of all levels are welcome. A team that finishes the warm-up and one clear 
 ## What is in this repository
 
 ```
-README.md                 this file
-GRADING.md                deliverables and the judging rubric
-AGENTS.md                 instructions for AI coding agents working on a solution
-starter_notebook.ipynb    the puzzle, the classical baseline, the cost Hamiltonian, and a QAOA warm-up on SV1
-requirements.txt          Python packages for running locally
-resources/
-  01_qiskit_refresher.ipynb           circuits, measurement, parameters, Pauli operators, transpiling
-  02_qbraid_sdk.ipynb                 qBraid providers, devices, jobs, the transpiler, cost discipline
-  03_qaoa_maxcut_with_qbraid.ipynb    QAOA for a graph problem, end to end, submitted to SV1
+uconn-fall-fest-2026-challenge/
+├── README.md                              this file
+├── GRADING.md                             deliverables, submission layout and the judging rubric
+├── AGENTS.md                              instructions for AI coding agents working on a solution
+├── starter_notebook.ipynb                 the puzzle, the classical baseline, the cost Hamiltonian, and a QAOA warm-up on SV1
+├── requirements.txt                       Python packages for running locally
+├── LICENSE                                Apache-2.0
+├── assets/
+│   ├── instant-insanity-light.png         the figure above, light theme
+│   └── instant-insanity-dark.png          the figure above, dark theme
+└── resources/
+    ├── 01_qiskit_refresher.ipynb          circuits, measurement, parameters, Pauli operators, transpiling
+    ├── 02_qbraid_sdk.ipynb                qBraid providers, devices, jobs, the transpiler, cost discipline
+    └── 03_qaoa_maxcut_with_qbraid.ipynb   QAOA for a graph problem, end to end, submitted to SV1
 ```
 
 New to quantum computing? Do the resources in order before the starter notebook. Each one takes about 35 to 40 minutes. Already know Qiskit? Start with the starter notebook. It takes about an hour.
@@ -56,16 +73,20 @@ New to quantum computing? Do the resources in order before the starter notebook.
 ### On qBraid (recommended)
 
 1. Create a free account at [account.qbraid.com](https://account.qbraid.com) with the email you registered with.
-2. Click **Launch on qBraid** above. qBraid Lab opens and clones this repository.
-3. Open `starter_notebook.ipynb` and run the cells from the top. The first cell installs anything missing.
+2. Open **Explore** in the left sidebar and switch to the **Events & Hackathons** tab.
+3. Select **Qiskit Fall Fest Connecticut 2026** in the event list (or **View Details** on its map pin) to open the hackathon page, then go to **Challenges**.
+4. On the Instant Insanity challenge card, click **Launch on qBraid**. qBraid Lab opens and clones this repository.
+5. Open `starter_notebook.ipynb` and run the cells from the top. The first cell installs anything missing.
+
+The **Launch on qBraid** button at the top of this page opens the same repository.
 
 Inside qBraid Lab your credentials load automatically, so the SV1 cells submit real jobs with no setup. Follow your jobs on the [quantum jobs page](https://account.qbraid.com/quantum-jobs).
 
 ### On your own machine
 
 ```bash
-git clone https://github.com/qBraid/fall-fest-ct-2026-challenge.git
-cd fall-fest-ct-2026-challenge
+git clone https://github.com/qBraid/uconn-fall-fest-2026-challenge.git
+cd uconn-fall-fest-2026-challenge
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 jupyter lab
@@ -78,17 +99,17 @@ To submit to SV1 from your own machine, create an API key in your qBraid account
 - An SV1 job of the size in these notebooks costs **0.375 qBraid credits**. SV1 bills by simulation time at 7.5 credits per minute, so very deep or very wide circuits cost more.
 - SV1 simulates up to 34 qubits. The full one-hot encoding of the four-cube puzzle needs 24 qubits, which SV1 handles easily. A laptop simulator slows down at that size, which is one reason to look for a smaller encoding.
 - Debug on the local Aer simulator first. Send a circuit to SV1 once it works.
-- Do not submit to quantum hardware (QPUs) unless the organizers say your team has credits for it. A QPU job costs far more than a simulator job.
+- This challenge runs on simulators only. The real-hardware session is Friday evening, on your own IBM Quantum account.
 
-<!-- TODO(organizers): how teams receive hackathon credits (organization invite or credit request). -->
+**Getting credits.** The organizers give each team a qBraid promo code at kickoff. To redeem it, open **Account → Wallet** in [account.qbraid.com](https://account.qbraid.com/account/wallet), choose a credit amount, enter the code in the **Promo code** field, and complete the purchase.
 
 ## Submitting
 
-Each team submits slides, working code, a short write-up and the IDs of its qBraid jobs. [GRADING.md](GRADING.md) lists every deliverable and the rubric.
+Each team submits the link to a **public GitHub repository** that holds its slides, working code and a one-page `SUBMISSION.md` with the IDs of its qBraid jobs. [GRADING.md](GRADING.md) gives the repository layout, every deliverable and the rubric.
 
 ## Credits
 
-- The idea of solving Instant Insanity on a quantum computer comes from the IonQ challenge at SC Quantathon v2 (October 2025): [ionq-samples/SCQuantathon-v2](https://github.com/ionq-samples/SCQuantathon-v2). Thank you to IonQ for the original challenge. This repository contains new material written for Qiskit Fall Fest Connecticut 2026 and copies no code from that repository.
+- The idea of solving Instant Insanity on a quantum computer comes from the IonQ challenge at SC Quantathon v2 (October 2025): [ionq-samples/SCQuantathon-v2](https://github.com/ionq-samples/SCQuantathon-v2). Thank you to IonQ for the original challenge and for the [interactive puzzle](https://instantinsanity.z20.web.core.windows.net/) and [switch-network](https://instantinsanity.z20.web.core.windows.net/switches.html) visualizations linked above. This repository contains new material written for Qiskit Fall Fest Connecticut 2026 and copies no code from that repository.
 - The graph method in the starter notebook is the classic solution described in the [Wikipedia article on Instant Insanity](https://en.wikipedia.org/wiki/Instant_Insanity).
 - E. Robertson and I. Munro, "NP-completeness, puzzles and games", *Utilitas Mathematica* 13 (1978) 99-116.
 

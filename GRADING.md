@@ -2,22 +2,38 @@
 
 This page lists what each team submits and how judges score it. The rubric rewards understanding and honest checking as much as results, so a beginner team can score well.
 
-<!-- TODO(organizers): confirm the submission deadline time, the submission channel, the team size cap and the judging slot. -->
+<!-- TODO(organizers): confirm the submission deadline time and the form or channel where teams post their repository link. -->
 
 ## Deadline and format
 
 - **Deadline:** Saturday, October 17, 2026, at the time the organizers announce at kickoff. Late submissions are not judged.
-- **Where:** the submission link the organizers share at kickoff.
-- **Teams:** solo or a team. Organizers match anyone who arrives without a team.
+- **What:** the link to one **public GitHub repository** per team, laid out as below. Post it where the organizers say at kickoff.
+- **Teams:** 2 to 4 people. Organizers match anyone who arrives without a team.
+- Do not push to the repository after the deadline. Judges read the last commit before it.
 - **Presentation:** 5 minutes per team, followed by 2 minutes of questions from the judges.
+
+## Repository layout
+
+Keep it simple. Judges open `SUBMISSION.md` first, then follow its links.
+
+```
+<your-team-repo>/
+├── SUBMISSION.md          team, level reached, how to run, results table, job IDs, AI use note
+├── slides.pdf             or slides.pptx; at most 8 slides
+├── solution.ipynb         your main notebook, saved with outputs
+├── requirements.txt       only if you need packages beyond this challenge's requirements.txt
+└── src/                   optional: .py modules your notebook imports
+```
+
+You may start from a copy of this challenge repository. If you do, delete what you did not use, so judges see your work first.
 
 ## Deliverables
 
-Submit all five. Missing items cost points in the matching rubric rows.
+Submit all five, inside the repository. Missing items cost points in the matching rubric rows.
 
 | # | Deliverable | What it must contain |
 |---|---|---|
-| 1 | **Slides** (PowerPoint, Google Slides or PDF, at most 8 slides) | The problem, your encoding, your algorithm, your results, and one thing you would try next. |
+| 1 | **Slides** (`slides.pdf` or `slides.pptx`, at most 8 slides; export Google Slides to PDF) | The problem, your encoding, your algorithm, your results, and one thing you would try next. |
 | 2 | **Working code** (a notebook, plus any `.py` files it imports) | Runs from top to bottom in qBraid Lab with no edits. Saved **with outputs**, so judges can read the results without running it. Fixed random seeds where you use randomness. |
 | 3 | **Write-up** (a `SUBMISSION.md`, one page) | Team members, which level you reached (warm-up, core, bonus), how to run your code, and the results table below. |
 | 4 | **qBraid job IDs** | The IDs of the SV1 jobs behind your reported results, listed in `SUBMISSION.md`. |
