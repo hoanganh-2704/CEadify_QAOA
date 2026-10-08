@@ -16,3 +16,6 @@ venv/
 
 # Judges only: the judging sheet is shared privately, never published.
 judging/
+
+.env
+.env.*
