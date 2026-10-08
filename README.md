@@ -7,8 +7,8 @@ The qBraid challenge at **Qiskit Fall Fest Connecticut 2026**, hosted by UConn Q
 Event page: [account.qbraid.com/hackathons/2026/uconn-fallfest](https://account.qbraid.com/hackathons/2026/uconn-fallfest)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/instant-insanity-dark.png">
-  <img alt="The four challenge cubes drawn as unfolded crosses, next to a tower where the front, right and left sides each show red, green, blue and yellow once, but the back shows red twice." src="assets/instant-insanity-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/instant-insanity-dark.gif">
+  <img alt="Animation: four coloured cubes spin, stack into a tower, and the tower turns. The front, right and left sides each show red, green, blue and yellow once, but the back shows red twice, so the tower fails." src="assets/instant-insanity-light.gif" width="640">
 </picture>
 
 ## The puzzle
@@ -58,8 +58,8 @@ uconn-fall-fest-2026-challenge/
 ├── requirements.txt                       Python packages for running locally
 ├── LICENSE                                Apache-2.0
 ├── assets/
-│   ├── instant-insanity-light.png         the figure above, light theme
-│   └── instant-insanity-dark.png          the figure above, dark theme
+│   ├── instant-insanity-light.gif         the animation above, light theme
+│   └── instant-insanity-dark.gif          the animation above, dark theme
 └── resources/
     ├── 01_qiskit_refresher.ipynb          circuits, measurement, parameters, Pauli operators, transpiling
     ├── 02_qbraid_sdk.ipynb                qBraid providers, devices, jobs, the transpiler, cost discipline
