@@ -13,3 +13,6 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+# Judges only: the judging sheet is shared privately, never published.
+judging/

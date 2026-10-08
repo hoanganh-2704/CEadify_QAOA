@@ -53,27 +53,19 @@ Put this table in `SUBMISSION.md`, one row per experiment you report.
 
 ## Rubric
 
-Five criteria, 100 points in total, plus up to 10 bonus points. Judges can give any score from 0 up to a criterion's points. The three columns describe roughly a third, two thirds and full marks. A missing deliverable scores 0 in its criterion.
+Five criteria, 100 points in total, plus up to 10 bonus points. A missing deliverable scores 0 in its criterion.
 
-| Criterion | Points | Starting | Solid | Excellent |
-|---|---|---|---|---|
-| **Encoding and quantum approach** | 30 | Runs the warm-up, or encodes only part of the puzzle. | A correct encoding of the full puzzle that finds a solved tower on SV1, above the random baseline. | Finds towers reliably and explains why its design choices help, or uses a smaller encoding than the starter's. |
-| **Classical checks** | 20 | Checks the final answer by eye. | Confirms that the known answer is the unique lowest cost, and reports the random baseline. | Also compares honestly with brute force or a classical method, including where classical wins. |
-| **Results** | 20 | A success rate with no context. | A complete results table. | Shows how results change with one design choice (depth, shots, encoding, or SV1 against real hardware) and explains why. |
-| **Code and understanding** | 15 | Code needs edits to run, or the team can explain only parts of it. | Runs top to bottom with saved outputs, and every member can explain each block. | Also explains limits and failure cases, and answers "what if" questions with confidence. |
-| **Presentation** | 15 | Hard to follow, or runs long. | A clear problem, method and result in 5 minutes. | A beginner in the room could follow it, and the takeaways are honest. |
+| Criterion | Points | The question judges ask |
+|---|---|---|
+| **Encoding and quantum approach** | 30 | Does your method fit the puzzle, and can you explain why you built it that way? |
+| **Classical checks** | 20 | How do you know your model and your answers are right? |
+| **Results** | 20 | What did you measure, and what does it tell you? |
+| **Code and understanding** | 15 | Does the code run as submitted, and can every team member explain it? |
+| **Presentation** | 15 | Could someone new to quantum computing follow your story? |
 
-A real-hardware run is optional. It earns credit through the **Results** row when you compare it with SV1, not by itself.
+**Bonus (up to 10 points):** generalize to N cubes and N colours. Judges look at how far your method scales and the evidence you show for it. Use `make_puzzle` and `count_answers` from the starter notebook, and say which seeds you used.
 
-### Bonus: N cubes and N colours (up to 10 points)
-
-| Points | What it takes |
-|---|---|
-| 3 | Your method runs on at least one puzzle with N = 5 and finds a correct tower on SV1 or a local simulator. |
-| 6 | It works for at least two values of N, and you report how qubits, depth and success rate grow with N. |
-| 10 | It also scales better than the one-hot starter encoding (6N qubits) in qubits or depth, with evidence. |
-
-Use `make_puzzle` and `count_answers` from the starter notebook to make puzzles, and say which seeds you used.
+Running on real hardware is optional. It counts when you compare it with your SV1 results.
 
 ## What judges look for
 
