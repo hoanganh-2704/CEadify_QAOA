@@ -55,16 +55,13 @@ uconn-fall-fest-2026-challenge/
 ├── starter_notebook.ipynb                 the puzzle, the classical baseline, the cost Hamiltonian, and a QAOA warm-up on SV1
 ├── requirements.txt                       Python packages for running locally
 ├── LICENSE                                Apache-2.0
-├── assets/
-│   ├── instant-insanity-light.gif         the animation above, light theme
-│   └── instant-insanity-dark.gif          the animation above, dark theme
 └── resources/
     ├── 01_qiskit_refresher.ipynb          circuits, measurement, parameters, Pauli operators, transpiling
     ├── 02_qbraid_sdk.ipynb                qBraid providers, devices, jobs, the transpiler, cost discipline
     └── 03_qaoa_maxcut_with_qbraid.ipynb   QAOA for a graph problem, end to end, submitted to SV1
 ```
 
-New to quantum computing? Do the resources in order before the starter notebook. Each one takes about 35 to 40 minutes. Already know Qiskit? Start with the starter notebook. It takes about an hour.
+Work through the three resources in order, then the starter notebook. Each resource takes about 35 to 40 minutes, and the starter notebook about an hour. Already know Qiskit? Skim resource 01, but still do 02 and 03: they cover the qBraid workflow the challenge uses.
 
 ## Getting started
 
@@ -74,7 +71,10 @@ New to quantum computing? Do the resources in order before the starter notebook.
 2. Open **Explore** in the left sidebar and switch to the **Events & Hackathons** tab.
 3. Select **Qiskit Fall Fest Connecticut 2026** in the event list (or **View Details** on its map pin) to open the hackathon page, then go to **Challenges**.
 4. On the Instant Insanity challenge card, click **Launch on qBraid**. qBraid Lab opens and clones this repository.
-5. Open `starter_notebook.ipynb` and run the cells from the top. The first cell installs anything missing.
+5. Open the `resources/` folder and run the three notebooks in order, from the top of each.
+6. Open `starter_notebook.ipynb` and run the cells from the top.
+
+The first cell of every notebook installs anything missing.
 
 Inside qBraid Lab your credentials load automatically, so the SV1 cells submit real jobs with no setup. Follow your jobs on the [quantum jobs page](https://account.qbraid.com/quantum-jobs).
 
@@ -92,15 +92,11 @@ To submit to SV1 from your own machine, create an API key in your qBraid account
 
 ### Compute and credits
 
-- An SV1 job of the size in these notebooks costs **0.375 qBraid credits**. SV1 bills by simulation time at 7.5 credits per minute, so very deep or very wide circuits cost more.
-- SV1 simulates up to 34 qubits. The full one-hot encoding of the four-cube puzzle needs 24 qubits, which SV1 handles easily. A laptop simulator slows down at that size, which is one reason to look for a smaller encoding.
-- Debug on the local Aer simulator first. Send a circuit to SV1 once it works.
-**Getting credits.** The organizers give each team a qBraid promo code at kickoff. To redeem it, open **Account → Wallet** in [account.qbraid.com](https://account.qbraid.com/account/wallet), choose a credit amount, enter the code in the **Promo code** field, and complete the purchase.
-
-**Earning time on real quantum hardware.** Teams that submit working jobs to SV1 through qBraid can earn extra credits to try their circuits on real quantum devices. Show a qBraid mentor the job IDs of your successful SV1 runs to claim them. Hardware runs are optional. Real devices add noise, so expect a lower success rate than on SV1, and report both.
-
-- A QPU job costs far more than an SV1 job. Check the price on the device page before you submit, and keep shots low.
-- Transpile for the device and keep circuits shallow. Deep QAOA circuits lose most of their signal to noise.
+- An SV1 job in these notebooks costs **0.375 credits**. SV1 bills 7.5 credits per minute of simulation, so bigger circuits cost more.
+- SV1 simulates up to 34 qubits. The full four-cube encoding needs 24, which slows a laptop simulator down. That is one reason to look for a smaller encoding.
+- Debug on the local Aer simulator. Send a circuit to SV1 once it works.
+- **Getting credits.** Each team gets a qBraid promo code at kickoff. Redeem it in [Account → Wallet](https://account.qbraid.com/account/wallet): choose an amount, enter the code under **Promo code**, and complete the purchase.
+- **Real hardware (optional).** Show a qBraid mentor the job IDs of your successful SV1 runs to earn hardware credits. A QPU job costs far more than SV1 and adds noise. Check the device price, keep shots low and circuits shallow, and report both success rates.
 
 ## Submitting
 
