@@ -30,11 +30,8 @@ Solve the puzzle with a quantum algorithm, run it through qBraid, and explain wh
 
 | Level | Task |
 |---|---|
-| **Warm-up** | Work through `starter_notebook.ipynb`. It solves half the puzzle (the front and back of the tower) with QAOA on 12 qubits, and runs the circuit on the AWS SV1 simulator. |
-| **Core** | Find a full solved tower for the four cubes in `starter_notebook.ipynb` with a quantum algorithm. Run it on SV1 through qBraid. Report how often your circuit returns a correct tower, what it costs in qubits, gates and credits, and how it compares with classical brute force and random guessing. |
-| **Bonus** | Generalize to **N cubes and N colours**. Each cube's faces use N colours, and each colour must show exactly once on each of the four sides. Run your method for as many values of N as you can, and show how qubits, circuit depth and success rate grow with N. |
-
-The general N-cube question is NP-complete (Robertson and Munro, 1978): no one knows a method that stays fast as N grows. N will be small on today's simulators. What we want to see is whether your idea **generalizes**, and how its cost grows.
+| **Warm-up** | Work through `starter_notebook.ipynb`. It solves one side pair, the front and back of the tower: classically with a graph, then with QAOA on 12 qubits on the AWS SV1 simulator. |
+| **Core** | Add the left and right: find a full solved tower for the four cubes in `starter_notebook.ipynb` with a quantum algorithm. Run it on SV1 through qBraid. Report how often your circuit returns a correct tower, what it costs in qubits, gates and credits, and how it compares with classical brute force and random guessing. |
 
 Teams have 2 to 4 people, and every level is welcome. A team that finishes the warm-up and one clear extension, with honest classical checks, can score well. See [GRADING.md](GRADING.md).
 
@@ -58,7 +55,9 @@ uconn-fall-fest-2026-challenge/
 └── resources/
     ├── 01_qiskit_refresher.ipynb          circuits, measurement, parameters, Pauli operators, transpiling
     ├── 02_qbraid_sdk.ipynb                qBraid providers, devices, jobs, the transpiler, cost discipline
-    └── 03_qaoa_maxcut_with_qbraid.ipynb   QAOA for a graph problem, end to end, submitted to SV1
+    ├── 03_qaoa_maxcut_with_qbraid.ipynb   QAOA for a graph problem, end to end, submitted to SV1
+    ├── helpers.py                         drawing and plumbing code the starter and resource 03 import
+    └── __init__.py                        lets the starter import resources.helpers
 ```
 
 Work through the three resources in order, then the starter notebook. Each resource takes about 35 to 40 minutes, and the starter notebook about an hour. Already know Qiskit? Skim resource 01, but still do 02 and 03: they cover the qBraid workflow the challenge uses.
@@ -76,7 +75,7 @@ Work through the three resources in order, then the starter notebook. Each resou
 
 The first cell of every notebook installs anything missing.
 
-Inside qBraid Lab your credentials load automatically, so the SV1 cells submit real jobs with no setup. Follow your jobs on the [quantum jobs page](https://account.qbraid.com/quantum-jobs).
+Inside qBraid Lab your credentials load automatically. The starter notebook asks you to write the code that queries a device and submits a job. `resources/02_qbraid_sdk.ipynb` and the [qBraid provider guide](https://docs.qbraid.com/v2/sdk/user-guide/providers/native) show how. Follow your jobs on the [quantum jobs page](https://account.qbraid.com/quantum-jobs).
 
 ### On your own machine
 
@@ -88,7 +87,7 @@ pip install -r requirements.txt
 jupyter lab
 ```
 
-To submit to SV1 from your own machine, create an API key in your qBraid account, then run `qbraid configure` or set `QBRAID_API_KEY` in your shell. Never paste a key into a notebook cell. Without credentials, every SV1 cell runs on the local Aer simulator instead and says so.
+To submit to SV1 from your own machine, create an API key in your qBraid account, then run `qbraid configure` or set `QBRAID_API_KEY` in your shell. Never paste a key into a notebook cell. Without credentials, the resource notebooks run their SV1 cells on the local Aer simulator instead and say so.
 
 ### Compute and credits
 
