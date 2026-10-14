@@ -65,7 +65,7 @@ Define nothing twice. The starter defines or imports these names, and its saved 
 ### Helping the team learn
 
 17. Explain each step in plain words before writing the code for it. The goal of the event is understanding, and the Code and understanding criterion of the rubric tests every team member.
-18. Keep a short log of what you generated and how it was checked. The team needs it for the AI use note in `SUBMISSION.md`.
+18. Keep a short log of what you generated and how it was checked. The team needs it for the AI use note in its repository's `README.md`.
 
 ## Useful directions
 

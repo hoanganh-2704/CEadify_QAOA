@@ -2,11 +2,11 @@
 
 This page lists what each team submits and how judges score it. The rubric rewards understanding and honest checking as much as results, so a beginner team can score well.
 
-<!-- TODO(organizers): confirm the submission deadline time and the form or channel where teams post their repository link. -->
+<!-- TODO(organizers): confirm the form or channel where teams post their repository link. -->
 
 ## Deadline and format
 
-- **Deadline:** Saturday, October 17, 2026, at the time the organizers announce at kickoff. Late submissions are not judged.
+- **Deadline:** Saturday, October 17, 2026, at **3:00 PM ET**, when demos begin. Late submissions are not judged.
 - **What:** the link to one **public GitHub repository** per team, laid out as below. Post it where the organizers say at kickoff.
 - **Teams:** 2 to 4 people. Organizers match anyone who arrives without a team.
 - Do not push to the repository after the deadline. Judges read the last commit before it.
@@ -14,11 +14,11 @@ This page lists what each team submits and how judges score it. The rubric rewar
 
 ## Repository layout
 
-Keep it simple. Judges open `SUBMISSION.md` first, then follow its links.
+Keep it simple. Judges open your `README.md` first, then follow its links.
 
 ```
 <your-team-repo>/
-├── SUBMISSION.md          team, level reached, how to run, results table, job IDs, AI use note
+├── README.md              team, level reached, how to run, results table, job IDs, AI use note
 ├── slides.pdf             or slides.pptx; at most 8 slides
 ├── solution.ipynb         your main notebook, saved with outputs
 ├── requirements.txt       only if you need packages beyond this challenge's requirements.txt
@@ -26,7 +26,7 @@ Keep it simple. Judges open `SUBMISSION.md` first, then follow its links.
 └── resources/             only if you import the starter's helpers: copy helpers.py and __init__.py here
 ```
 
-You may start from a copy of this challenge repository. If you do, delete what you did not use, so judges see your work first.
+You may start from a copy of this challenge repository. If you do, replace this challenge's `README.md` with your own, and delete what you did not use, so judges see your work first.
 
 ## Deliverables
 
@@ -36,13 +36,13 @@ Submit all five, inside the repository. Missing items cost points in the matchin
 |---|---|---|
 | 1 | **Slides** (`slides.pdf` or `slides.pptx`, at most 8 slides; export Google Slides to PDF) | The problem, your encoding, your algorithm, your results, and one thing you would try next. |
 | 2 | **Working code** (a notebook, plus any `.py` files it imports) | Runs from top to bottom in qBraid Lab with no edits. Saved **with outputs**, so judges can read the results without running it. Fixed random seeds where you use randomness. |
-| 3 | **Write-up** (a `SUBMISSION.md`, one page) | Team members, which level you reached (warm-up or core), how to run your code, and the results table below. |
-| 4 | **qBraid job IDs** | The IDs of the jobs behind your reported results, listed in `SUBMISSION.md`: your SV1 jobs, plus any real-hardware (QPU) jobs you ran with earned credits. |
-| 5 | **AI use note** (a section of `SUBMISSION.md`) | Which AI tools you used, for which parts, and how you checked their output. Using AI is allowed and encouraged. Not disclosing it is not. |
+| 3 | **Write-up** (your repository's `README.md`, about one page) | Team members, which level you reached (warm-up or core), how to run your code, and the results table below. |
+| 4 | **qBraid job IDs** | The IDs of the jobs behind your reported results, listed in your `README.md`: your SV1 jobs, plus any real-hardware (QPU) jobs you ran with earned credits. |
+| 5 | **AI use note** (a section of your `README.md`) | Which AI tools you used, for which parts, and how you checked their output. Using AI is allowed and encouraged. Not disclosing it is not. |
 
 ### Results table
 
-Put this table in `SUBMISSION.md`, one row per experiment you report.
+Put this table in your `README.md`, one row per experiment you report.
 
 | Encoding | Device | Qubits | Two-qubit gates (after transpiling) | Depth | Shots | P(correct tower) | Random-guess baseline | qBraid job ID |
 |---|---|---|---|---|---|---|---|---|

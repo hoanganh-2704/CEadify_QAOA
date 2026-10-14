@@ -99,7 +99,7 @@ To submit to SV1 from your own machine, create an API key in your qBraid account
 
 ## Submitting
 
-Each team submits the link to a **public GitHub repository** that holds its slides, working code and a one-page `SUBMISSION.md` with the IDs of its qBraid jobs. [GRADING.md](GRADING.md) gives the repository layout, every deliverable and the rubric.
+Each team submits the link to a **public GitHub repository** that holds its slides, working code and a `README.md` of about one page with the IDs of its qBraid jobs. [GRADING.md](GRADING.md) gives the repository layout, every deliverable and the rubric.
 
 ## Credits
 
