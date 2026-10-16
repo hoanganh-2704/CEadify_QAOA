@@ -11,6 +11,7 @@ Read `README.md` for the challenge and `GRADING.md` for what the team must hand 
 - A tower is **solved** when each of the four sides shows every colour exactly once.
 - Equivalent graph form: one node per colour, one edge per opposite pair. A solution is two **2-factors** (edge sets meeting every node exactly twice), one edge per cube in each, that never use the same edge of a cube. Each cube therefore has 6 valid choices: an ordered pair of distinct pair indices.
 - The four-cube instance `CUBES` in `starter_notebook.ipynb` has exactly one tower. The brute force finds 8 solved orientations of 331,776 (one tower in its 8 symmetric positions). At the graph level, 2 of the 1,296 cases solve it (the tower and its quarter turn).
+- Bonus: N cubes, N colours, the same four-sides rule. `make_puzzle(n, seed)` builds one with a planted answer. Seeds `{5: 16, 6: 86, 7: 68, 8: 4}` give exactly one tower; check any other seed with `count_answers` first.
 
 ## Reuse the starter notebook's functions
 
@@ -30,13 +31,14 @@ Define nothing twice. The starter defines or imports these names, and its saved 
 | `w_state`, `xy_mixer`, `constrained_qaoa` | The one-hot-preserving QAOA from the warm-up. |
 | *helpers:* `prepare`, `strip_marker`; `run_on_qbraid(circuit, shots)` | Add a marker qubit and transpile; send the circuit with the team's `submit_job`; return counts in Qiskit order. Falls back to local Aer while `submit_job` returns `None`. |
 | *helpers:* `solution_strings`, `draw_nets`, `draw_graph`, `draw_tower`, `plot_*`, `show`, `CIRCUIT` | Bitstrings of front/back picks, and the notebook's figures. |
+| `make_puzzle(n, seed)`, `count_answers(cubes)` | Bonus puzzle generator and brute-force answer counter. |
 | `submit_job(qc, shots)` | A stub the team writes: query a qBraid device, submit the job, return counts. Help the team write it; do not paste a finished version. |
 
 ## Rules
 
 ### Correctness first
 
-1. **Verify the model classically before any quantum run.** For any new encoding or Hamiltonian, enumerate the candidates (or a large random sample) and confirm: the known answer has the lowest cost, nothing wrong ties with it, and the Hamiltonian value equals the classical cost on every checked bitstring. Show this check in the notebook.
+1. **Verify the model classically before any quantum run.** For any new encoding or Hamiltonian, enumerate the candidates (or a large random sample for big N) and confirm: the known answer has the lowest cost, nothing wrong ties with it, and the Hamiltonian value equals the classical cost on every checked bitstring. Show this check in the notebook.
 2. **Mind Qiskit bit order.** In a Qiskit counts key, qubit 0 is the **rightmost** character. Decode with that, and test your decoder on a known answer before trusting it.
 3. **Check every reported tower** with `solves(tower_from(...))` or an equivalent independent checker. A low energy is not proof.
 4. **Report the random-guess baseline** next to every success rate: the chance that a uniform random bitstring of the encoding is a solved tower.
@@ -58,7 +60,7 @@ Define nothing twice. The starter defines or imports these names, and its saved 
 ### Code and reproducibility
 
 13. **Notebooks run top to bottom** in qBraid Lab with no edits, and are saved with outputs.
-14. **Fix seeds** (`SEED = 7` in the starter) for simulators and optimizers, and record them.
+14. **Fix seeds** (`SEED = 7` in the starter) for simulators, optimizers and puzzle generation, and record them.
 15. Support Qiskit 1.3 and later, including 2.x. Avoid APIs removed in 2.0 (V1 `Sampler` and `Estimator`, `execute`). Prefer `Statevector`, `AerSimulator`, `SparsePauliOp`, `transpile`.
 16. Keep helper code readable. A judge asks team members to explain it, so favour clear functions over clever ones.
 
@@ -72,10 +74,10 @@ Define nothing twice. The starter defines or imports these names, and its saved 
 Point the team to these when they ask what to try. Each is a real research direction, not a guaranteed win.
 
 - **Constrained mixers.** Extend the W-state start and XY mixer to the left/right qubits. Handle "a pair cannot serve both axes" with a penalty, or with a mixer over each cube's 6 valid choices.
-- **Compact encodings.** Six choices fit in 3 qubits per cube (12 in total) instead of 6. The cost becomes higher order (more than two Z operators per term), so `cost_layer` needs multi-qubit Z rotations.
+- **Compact encodings.** Six choices fit in 3 qubits per cube (3N in total) instead of 6. The cost becomes higher order (more than two Z operators per term), so `cost_layer` needs multi-qubit Z rotations.
 - **Hybrid splits.** Sample front/back 2-factors with a quantum circuit, then pair two that share no edge. Be explicit about which part is quantum.
 - **Other algorithms.** VQE with a hardware-efficient ansatz, variational quantum imaginary time evolution, Grover adaptive search, or quantum annealing-style schedules.
-- **Better optimization.** CVaR objectives, warm starts from the p = 1 grid, or layer-by-layer growth.
+- **Better optimization.** CVaR objectives, warm starts from the p = 1 grid, layer-by-layer growth, or angles transferred from small N to large N.
 
 ## Running headless
 

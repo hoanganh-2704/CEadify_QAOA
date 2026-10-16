@@ -32,6 +32,9 @@ Solve the puzzle with a quantum algorithm, run it through qBraid, and explain wh
 |---|---|
 | **Warm-up** | Work through `starter_notebook.ipynb`. It solves one side pair, the front and back of the tower: classically with a graph, then with QAOA on 12 qubits on the AWS SV1 simulator. |
 | **Core** | Add the left and right: find a full solved tower for the four cubes in `starter_notebook.ipynb` with a quantum algorithm. Run it on SV1 through qBraid. Report how often your circuit returns a correct tower, what it costs in qubits, gates and credits, and how it compares with classical brute force and random guessing. |
+| **Bonus** | Generalize to **N cubes and N colours**. Each cube's faces use N colours, and each colour must show exactly once on each of the four sides. Run your method for as many values of N as you can, and show how qubits, circuit depth and success rate grow with N. |
+
+The general N-cube question is NP-complete (Robertson and Munro, 1978): no one knows a method that stays fast as N grows. N will be small on today's simulators. What we want to see is whether your idea **generalizes**, and how its cost grows.
 
 Teams have 2 to 4 people, and every level is welcome. A team that finishes the warm-up and one clear extension, with honest classical checks, can score well. See [GRADING.md](GRADING.md).
 

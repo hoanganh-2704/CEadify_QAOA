@@ -36,7 +36,7 @@ Submit all five, inside the repository. Missing items cost points in the matchin
 |---|---|---|
 | 1 | **Slides** (`slides.pdf` or `slides.pptx`, at most 8 slides; export Google Slides to PDF) | The problem, your encoding, your algorithm, your results, and one thing you would try next. |
 | 2 | **Working code** (a notebook, plus any `.py` files it imports) | Runs from top to bottom in qBraid Lab with no edits. Saved **with outputs**, so judges can read the results without running it. Fixed random seeds where you use randomness. |
-| 3 | **Write-up** (your repository's `README.md`, about one page) | Team members, which level you reached (warm-up or core), how to run your code, and the results table below. |
+| 3 | **Write-up** (your repository's `README.md`, about one page) | Team members, which level you reached (warm-up, core, bonus), how to run your code, and the results table below. |
 | 4 | **qBraid job IDs** | The IDs of the jobs behind your reported results, listed in your `README.md`: your SV1 jobs, plus any real-hardware (QPU) jobs you ran with earned credits. |
 | 5 | **AI use note** (a section of your `README.md`) | Which AI tools you used, for which parts, and how you checked their output. Using AI is allowed and encouraged. Not disclosing it is not. |
 
@@ -44,8 +44,8 @@ Submit all five, inside the repository. Missing items cost points in the matchin
 
 Put this table in your `README.md`, one row per experiment you report.
 
-| Encoding | Device | Qubits | Two-qubit gates (after transpiling) | Depth | Shots | P(correct tower) | Random-guess baseline | qBraid job ID |
-|---|---|---|---|---|---|---|---|---|
+| Puzzle (N cubes) | Encoding | Device | Qubits | Two-qubit gates (after transpiling) | Depth | Shots | P(correct tower) | Random-guess baseline | qBraid job ID |
+|---|---|---|---|---|---|---|---|---|---|
 
 - **P(correct tower)** is the fraction of shots that decode to a solved tower. Check every decoded tower with a classical checker, such as `solves` in the starter notebook.
 - **Random-guess baseline** is the probability that a uniformly random bitstring of your encoding is a solved tower. It tells the judges how much your algorithm adds.
@@ -54,7 +54,7 @@ Put this table in your `README.md`, one row per experiment you report.
 
 ## Rubric
 
-Five criteria, 100 points in total. A missing deliverable scores 0 in its criterion.
+Five criteria, 100 points in total, plus up to 10 bonus points. A missing deliverable scores 0 in its criterion.
 
 | Criterion | Points | The question judges ask |
 |---|---|---|
@@ -63,6 +63,8 @@ Five criteria, 100 points in total. A missing deliverable scores 0 in its criter
 | **Results** | 20 | What did you measure, and what does it tell you? |
 | **Code and understanding** | 15 | Does the code run as submitted, and can every team member explain it? |
 | **Presentation** | 15 | Could someone new to quantum computing follow your story? |
+
+**Bonus (up to 10 points):** generalize to N cubes and N colours. Judges look at how far your method scales and the evidence you show for it. Use `make_puzzle` and `count_answers` from the starter notebook, and say which seeds you used.
 
 Running on real hardware is optional. It counts when you compare it with your SV1 results.
 
