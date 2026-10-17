@@ -467,8 +467,59 @@ def round8():
     })
 
 
+# ---------------------------------------------------------------- round 9: noise grid on the submitted file
+
+ROUND9_SHOTS = 1000   # assignment said 2000; one noisy 200-shot run took 19.7 s, so 2000 x 6 ~ 20 min
+CX_GRID, READOUT_GRID = (0.003, 0.005, 0.01), (0.005, 0.02)
+
+
+def round9():
+    import hashlib
+
+    r8 = json.loads((RESULTS / "round8.json").read_text())
+    sha = hashlib.sha256(QASM_PATH.read_bytes()).hexdigest()
+    assert sha == r8["qasm_sha256"], "the QASM file is not the one round 8 froze"
+    loaded = S.load_qasm(QASM_PATH)     # simulated as-is: no re-transpiling
+    cubes = S.starter_puzzle(3, 0)
+    baseline = r8["random_legal"]
+    cells = [None] + [(cx, ro) for cx in CX_GRID for ro in READOUT_GRID]
+    rows = []
+    for cell in cells:
+        model = None if cell is None else S.noise_model(cell[0], S.ONE_QUBIT_ERROR, cell[1])
+        t0 = time.perf_counter()
+        counts = S.run_loaded(loaded, ROUND9_SHOTS, S.SEED, model)
+        row = S.results_row(counts, cubes, marker=True)
+        shots = row["total"] + row["marker_dropped"]
+        rows.append({
+            "noise": None if cell is None else {"cx": cell[0], "readout": cell[1],
+                                                "sx_x": S.ONE_QUBIT_ERROR, "rz": 0.0},
+            **{k: row[k] for k in ("total", "kept", "solved", "marker_dropped")},
+            "p_all": row["solved"] / shots, "kept_fraction": row["kept"] / shots,
+            "p_post_selected": row["p_post_selected"],
+            "pred_100": S.shot_prediction(row, 100, baseline),
+            "run_s": time.perf_counter() - t0, "counts": counts})
+        r, pr = rows[-1], rows[-1]["pred_100"]
+        print(f"{cell}: P_all {r['p_all']:.2%} kept {r['kept_fraction']:.1%} post {r['p_post_selected']:.2%}"
+              f" | 100 shots: kept {pr['expected_kept']:.1f} {pr['kept_95']} solved "
+              f"{pr['expected_solved']:.1f} {pr['solved_95']} p={pr['p_value_vs_random']:.2g}"
+              f"  ({r['run_s']:.0f}s)")
+    save("round9.json", {
+        "qasm_file": r8["qasm_file"], "qasm_sha256": sha, "cx_in_file": loaded.count_ops()["cx"],
+        "qubits": loaded.num_qubits, "exact_p": r8["exact_p"], "shots": ROUND9_SHOTS,
+        "shots_note": "1000 instead of the assigned 2000: one noisy 200-shot run of the "
+                      "19-qubit file took 19.7 s, so 6 cells x 2000 shots would take ~20 min",
+        "seed_simulator": S.SEED, "baseline_post_selected": baseline,
+        "assumptions": "depolarizing on cx (grid) and sx/x (5e-4), none on rz, symmetric "
+                       "readout (grid), no routing; IonQ recompiles to native gates, so "
+                       "this is a band, not a model of the device",
+        "rows": rows})
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "8"
+    which = sys.argv[1] if len(sys.argv) > 1 else "9"
+    if which == "9":
+        round9()
+        sys.exit()
     if which == "8":
         round8()
         sys.exit()

@@ -64,7 +64,10 @@ N = 3, p = 1 circuit should also run on SV1, which is cheap.
 
 | # | Date / time | Device | p | Qubits | CX after device transpile | Shots | Job ID | Credits | Valid one-hot shots | Solved towers | P(solved) | vs prediction |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 2026-10-17 | `aws:aws:sim:sv1` | 1 (N = 3, `make_puzzle(3, 0)`) | 19 (18 + marker) | 200 (GRADING); file holds 215 | 1000 | `aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6` | _see qBraid jobs page_ | 1000/1000 (marker dropped 0) | 377 | **37.70%** (random post-selected 7.41%) | exact 36.38%; +1.3 pts, within 1σ (±1.5) ✅ |
+| 1 | 2026-10-17 | `aws:aws:sim:sv1` | 7 (N = 4) | 25 (24 + marker) | 1958 (GRADING) | 1000 | `aws:aws:sim:sv1-d8ed-qjob-6ad3b20238127b44c71ba11b` | 3.04 | all (`strip_marker` raised no error) | 362 | **36.20%** (random legal 0.154%) | exact 35.12%; +1.1 pts, within 1σ (±1.5) ✅ |
+| 2 | 2026-10-17 | `aws:aws:sim:sv1` | 1 (N = 3, `make_puzzle(3, 0)`) | 19 (18 + marker) | 200 (GRADING); file holds 215 | 1000 | `aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6` | 0.375 | 1000/1000 (marker dropped 0) | 377 | **37.70%** (random post-selected 7.41%) | exact 36.38%; +1.3 pts, within 1σ (±1.5) ✅ |
+
+| 3 | 2026-10-17 | `aws:ionq:qpu:forte-enterprise-1` | 1 (N = 3) | 19 (18 + marker) | IonQ native (recompiled) | 100 | `aws:ionq:qpu:forte-enterprise-1-d8ed-qjob-6ad3b15c38127b44c71ba0ea` | est. 830 (charged on completion) | _queued, position 6_ | | | |
 
 Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
 `results/hardware_n3_p1.qasm` (SHA-256 checked before sending).
@@ -73,6 +76,12 @@ Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
 
 <!-- One short entry per run: what we expected, what we measured, the gap, and
 what we changed or concluded because of it. -->
+
+**Run 1 (SV1, N = 4, p = 7, the main result).** Sent by running
+`solution.ipynb` top to bottom (7.3 min), so the job ID and result are saved
+in the notebook. Expected 35.1% ± 1.5; measured 36.2% (local Aer gave
+34.3%). The improved circuit behaves on SV1 exactly as simulated. This is
+the row for the README.
 
 **Run 2 (SV1, N = 3, p = 1).** Expected 36.4% ± 1.5; measured 37.7%. The
 whole path (QASM file → `submit_job` → SV1 → `split_marker` → decode →

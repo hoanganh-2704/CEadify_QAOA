@@ -580,6 +580,24 @@ def results_row(counts, cubes, marker=False, **table):
             "p_post_selected": m["solved"] / m["valid"] if m["valid"] else 0.0}
 
 
+def shot_prediction(row, n=100, baseline=None):
+    """Scale simulated rates (from a results_row with marker=True) to an n-shot run.
+    Rates use all shots, so a shot lost to a marker readout flip counts as not kept.
+    Intervals are central 95% binomial intervals at the simulated rates; the p-value is
+    one-sided, P(X >= solved | kept, baseline) at the rounded expected counts."""
+    from scipy.stats import binom
+
+    shots = row["total"] + row["marker_dropped"]
+    kept_rate, solved_rate = row["kept"] / shots, row["solved"] / shots
+    kept, solved = round(n * kept_rate), round(n * solved_rate)
+    p_value = float(binom.sf(solved - 1, kept, baseline)) if kept else 1.0
+    return {"n": n, "expected_kept": n * kept_rate, "expected_solved": n * solved_rate,
+            "kept_95": [int(binom.ppf(0.025, n, kept_rate)), int(binom.ppf(0.975, n, kept_rate))],
+            "solved_95": [int(binom.ppf(0.025, n, solved_rate)),
+                          int(binom.ppf(0.975, n, solved_rate))],
+            "p_value_vs_random": p_value}
+
+
 def shot_metrics(counts, cubes):
     """Valid (one-hot) and solved shot counts, each solved tower checked with solves()."""
     shots = sum(counts.values())

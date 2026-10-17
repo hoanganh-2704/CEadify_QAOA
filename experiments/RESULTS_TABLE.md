@@ -17,8 +17,8 @@ saved outputs; the "ported" row from the notebook after porting).
   bitstring of the encoding is a solved tower (answers / 2^qubits). A random
   *legal* pick (one choice per cube) is also listed below the table, because
   the circuit only produces legal picks.
-- **Device / job ID:** nothing has been sent to qBraid yet. Every row is
-  local simulation, so there are no job IDs.
+- **Device / job ID:** rows marked SV1 or QPU ran on qBraid and carry their
+  job ID. All other rows are local simulation and have no job ID.
 
 Encoding for every row: 6 qubits per cube, one-hot over the 6 legal
 (front/back, left/right) choices; W-state start; XY mixer. Unless the row
@@ -53,8 +53,16 @@ says otherwise: full mixer (15 pairs per cube) and p = 7.
 | 7 | 3 | p = 3, assumed noise | local Aer + noise model | 18 | 540 | 397 | 2000 | 0.65% (22.8% after keeping one-hot shots, 13/57) | 6.1e-5 | — |
 | 7 | 3 | p = 4, noiseless | local Aer | 18 | 710 | 519 | 2000 | 82.15% (exact 82.53%) | 6.1e-5 | — |
 | 7 | 3 | p = 4, assumed noise | local Aer + noise model | 18 | 710 | 519 | 2000 | 0.30% (18.8% after keeping one-hot shots, 6/32) | 6.1e-5 | — |
-| — | 4 | Round-4 circuit (planned) | `aws:aws:sim:sv1` | 24 (+1 marker) | 1958 | ≈907 | 1000 | _pending_ | 1.2e-7 | _pending_ |
-| — | _tbd after round-7 review_ | (planned) | `aws:ionq:qpu:forte-enterprise-1` | | | | | _pending_ | | _pending_ |
+| 8 | 3 (`make_puzzle(3, 0)`) | Hardware file `hardware_n3_p1.qasm` (p = 1, after `prepare`), loaded back | local Aer | 19 (18 + marker) | 200 (file holds 215) | 135 | 2000 | 36.95% (exact 36.38%) | 6.1e-5 | — |
+| **SV1** | **3** | **Same hardware file, p = 1** | **`aws:aws:sim:sv1`** | **19 (18 + marker)** | **200 (file holds 215)** | **135** | **1000** | **37.70%** (377/1000; all shots one-hot; exact 36.38%) | **6.1e-5** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6`** |
+| **QPU** | 3 | Same hardware file, p = 1 | `aws:ionq:qpu:forte-enterprise-1` | 19 (18 + marker) | 200 (file holds 215; IonQ recompiles to native gates) | 135 | 100 | _in IonQ queue_ | 6.1e-5 | _pending_ |
+| **SV1** | **4** | **Round-4 circuit (reduced H, Gibbs, p = 7), sent from `solution.ipynb`** | **`aws:aws:sim:sv1`** | **25 (24 + marker)** | **1958** | **907** | **1000** | **36.20%** (362/1000; exact 35.12%) | **1.2e-7** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b20238127b44c71ba11b`** |
+
+**Hardware rows:** P(correct tower) counts all shots, as GRADING.md
+defines it. Because noise produces illegal strings, the rows also report
+the rate among one-hot shots only, compared with the 7.41% random rate after
+the same filter (round 7: the filter alone reaches 7.41%, so that is the
+fair comparison).
 
 **Random legal pick** (uniform over one choice per cube, the space the
 circuit stays in): N = 4: 2/1296 = 0.154%; N = 5: 2/7776 = 0.026%; N = 3:
@@ -63,7 +71,7 @@ one-hot shots.
 
 **Round 7 noise model** (an assumption, not a device calibration):
 depolarizing 1% on `cx`, 0.05% on `sx`/`x`, 2% readout flips, no routing.
-Round 7 is still under teacher review.
+Round 7 is accepted, and its test was strengthened after review.
 
 **Classical baseline:** brute force over all orientations takes under 1 s
 for N = 4 and 7.4 s for N = 5 (`count_answers`: 0.01 s). No quantum speedup

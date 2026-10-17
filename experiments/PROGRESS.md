@@ -178,9 +178,19 @@ first. Expected about 35 kept and 10 solved vs 2.6 by chance (see
   readout 0.5/2%? Report 95% intervals and p-values against 7.41%. The test
   checks the file hash, that the noise-off run matches exact, and that every
   number recomputes from saved counts.
-- **Round 10 (planned):** a fixed analysis script, tested on simulated
-  counts, that turns hardware counts into a README results row with a
-  binomial test against 7.41%.
+- **Round 10 (assigned; changed at the team's request): Grover vs QAOA.**
+  The team asked to try Grover as well. This overrides, for this round, the
+  v3 prompt's rule against oracle approaches; the challenge's AGENTS.md
+  lists Grover adaptive search as a valid direction.
+  (a) Required: ideal-oracle amplitude amplification over the legal subspace
+  (W-product state preparation) for N = 3 and N = 4, next to the QAOA
+  curves from rounds 6–7. The best iteration count uses the number of
+  answers, which QAOA never needs; that must be stated. (b) Optional: one
+  measured colour-degree check at gate level, with a labelled lower bound
+  for the full oracle. Test written first: the oracle marks exactly the
+  brute-force answers, and P(solved) matches sin²((2k+1)θ) within 1e-9.
+  (The planned analysis script for hardware counts is covered by
+  `experiments/qbraid_job.py`.)
 
 ### Round 7 details
 
