@@ -1,0 +1,810 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\definecolor{codebg}{RGB}{247,247,250}
+\definecolor{codekw}{RGB}{110,60,200}
+\definecolor{codestr}{RGB}{170,90,20}
+\definecolor{codecom}{RGB}{110,110,110}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecom}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single, rulecolor=\color{black!15},
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, upquote=true,
+  xleftmargin=4pt, xrightmargin=4pt,
+  literate={γ}{{$\gamma$}}1 {β}{{$\beta$}}1
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{A Guide to the Instant Insanity Starter Notebook\\[4pt]
+  \large Qiskit Fall Fest Connecticut 2026 --- qBraid challenge}
+\author{Study notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent These notes walk through \code{starter\_notebook.ipynb} section by
+section. Each part shows the code from the notebook and explains what it does
+and why. The numbers quoted come from the notebook's saved outputs. The notes
+cover only the code the organizers provided; the parts left for your team
+(\code{submit\_job} and the core challenge) are described but not solved.
+
+\tableofcontents
+\newpage
+
+%======================================================================
+\section{Setup}
+%======================================================================
+
+The first cell installs any missing packages. It uses
+\code{importlib.util.find\_spec} to test whether each module can be imported,
+and only installs the ones that cannot. It does not upgrade packages that are
+already loaded, because replacing a package in a running kernel can break it.
+
+\begin{lstlisting}
+NEEDED = {"qiskit": "qiskit>=1.3,<3", "qiskit_aer": "qiskit-aer>=0.15",
+          "qbraid": "qbraid[qiskit]>=0.12", ...}
+missing = [spec for mod, spec in NEEDED.items()
+           if importlib.util.find_spec(mod) is None]
+if missing:
+    subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", *missing],
+                   check=True)
+\end{lstlisting}
+
+The second cell imports the basics and the fixed random seed:
+
+\begin{lstlisting}
+import itertools
+import time
+import numpy as np
+from resources.helpers import SEED      # SEED = 7
+\end{lstlisting}
+
+\code{SEED} is used for every random choice in the notebook, so each run gives
+the same numbers. The challenge rules require fixed seeds for reproducibility.
+
+%======================================================================
+\section{The puzzle (Section 1)}
+%======================================================================
+
+\begin{lstlisting}
+COLOURS = "RGBY"
+
+CUBES = [
+    ["GR", "BR", "GY"],   # cube 1
+    ["GY", "RB", "BY"],   # cube 2
+    ["BR", "RG", "RY"],   # cube 3
+    ["YR", "RG", "BG"],   # cube 4
+]
+\end{lstlisting}
+
+\paragraph{The data format.} A cube has six faces, which come in three pairs of
+opposite faces. The notebook stores a cube as those three pairs. The string
+\code{"GR"} means a green face sits opposite a red face. The order of the two
+letters does not matter for the puzzle.
+
+This is all the information the puzzle needs. Which face is ``up'' does not
+matter, only which colours sit opposite each other, because a tower only shows
+the front, back, left and right faces of each cube.
+
+\code{draw\_nets(CUBES)} draws each cube unfolded as a cross of six squares.
+Cube 3 has three red faces, which makes red the hardest colour to place.
+
+%======================================================================
+\section{Brute force (Section 2)}
+%======================================================================
+
+\subsection{All orientations of one cube}
+
+\begin{lstlisting}
+def orientations(cube):
+    """The 24 ways a cube can sit, as (front, back, left, right) colours."""
+    views = []
+    for a, b in itertools.permutations(range(3), 2):   # front/back pair, left/right pair
+        for fa in (0, 1):
+            for fb in (0, 1):
+                fb_pair, lr_pair = cube[a], cube[b]
+                views.append((fb_pair[fa], fb_pair[1 - fa], lr_pair[fb], lr_pair[1 - fb]))
+    return views
+\end{lstlisting}
+
+\paragraph{How the 24 is counted.}
+\begin{itemize}
+  \item \code{permutations(range(3), 2)} picks an \emph{ordered} pair
+        $(a, b)$ of different pair indices: pair $a$ goes on the front/back
+        axis and pair $b$ on the left/right axis. There are $3 \times 2 = 6$
+        such choices. The third pair is hidden on top and bottom.
+  \item \code{fa} decides which colour of pair $a$ faces front (the other faces
+        back). \code{fb} does the same for left/right. That is $2 \times 2 = 4$
+        more choices.
+\end{itemize}
+In total $6 \times 4 = 24$, which matches the 24 rotations of a cube. Each view
+is a tuple \code{(front, back, left, right)}.
+
+\subsection{Checking a tower}
+
+\begin{lstlisting}
+def solves(tower):
+    """True when each of the four sides shows four different colours."""
+    return all(len({view[side] for view in tower}) == len(tower) for side in range(4))
+\end{lstlisting}
+
+A tower is a list of views, one per cube. For each of the four sides, the code
+collects that side's colours into a Python \code{set}. A set drops repeats, so
+its size equals the number of cubes only when no colour repeats. This works for
+any number of cubes, which matters for the bonus.
+
+\subsection{Trying every tower}
+
+\begin{lstlisting}
+options = [orientations(cube) for cube in CUBES]
+winners = [tower for tower in itertools.product(*options) if solves(tower)]
+\end{lstlisting}
+
+\code{itertools.product} goes through every combination of one view per cube:
+$24^4 = 331{,}776$ towers. The saved output is
+\emph{checked 331,776 towers in 0.4 s, found 8 solutions}. The 8 solutions are
+one tower seen in 8 ways: 4 quarter turns $\times$ 2 (upside down).
+
+\textbf{Takeaway:} for 4 cubes, brute force takes under a second. Any quantum
+result for 4 cubes must be compared honestly against this.
+
+%======================================================================
+\section{The graph trick (Section 3)}
+%======================================================================
+
+\subsection{The idea}
+
+Draw one dot per colour and one line per opposite pair. Each cube adds three
+lines (12 in total). Now look at only the front and back of a tower:
+\begin{itemize}
+  \item each cube puts one of its pairs on the front/back axis, so we
+        \emph{pick one line per cube};
+  \item every colour must show once on the front and once on the back, so
+        every colour dot must be touched by \emph{exactly two} picked lines.
+\end{itemize}
+A set of lines that touches every dot exactly twice is called a
+\textbf{2-factor}. The left and right need a second 2-factor, and each cube must
+use a \emph{different} line for it (a pair cannot face two directions at once).
+So each cube has $3 \times 2 = 6$ choices, and the search shrinks from
+$331{,}776$ towers to $6^4 = 1{,}296$ cases.
+
+\subsection{The code}
+
+\begin{lstlisting}
+CHOICES = list(itertools.permutations(range(3), 2))  # (front/back pair, left/right pair)
+
+
+def degrees(cubes, picks):
+    """How many picked lines touch each colour."""
+    count = dict.fromkeys(COLOURS, 0)
+    for cube, p in zip(cubes, picks):
+        for colour in cube[p]:
+            count[colour] += 1
+    return count
+
+
+def is_two_factor(cubes, picks):
+    return all(d == 2 for d in degrees(cubes, picks).values())
+
+
+front_back = [picks for picks in itertools.product(range(3), repeat=len(CUBES))
+              if is_two_factor(CUBES, picks)]
+\end{lstlisting}
+
+\begin{itemize}
+  \item \code{CHOICES} is the list of the 6 valid choices per cube, as
+        \code{(front/back pair, left/right pair)}. It is used later for the full
+        puzzle.
+  \item \code{picks} holds one pair index per cube, e.g.\ \code{(0, 2, 1, 1)}.
+  \item \code{degrees} counts how many times each colour appears among the
+        picked pairs. In graph terms this is each dot's \emph{degree}. A pair
+        like \code{"RR"} would add 2 to red, which is correct: it is a loop.
+  \item \code{is\_two\_factor} checks that every degree is exactly 2.
+  \item \code{front\_back} tries all $3^4 = 81$ picks. The output is
+        \emph{4 of 81 front/back picks are 2-factors}.
+\end{itemize}
+
+\subsection{From a 2-factor to a tower}
+
+\begin{lstlisting}
+from resources.helpers import draw_tower, orient, tower_from
+
+ends = orient(CUBES, front_back[0])
+draw_tower([(ends[c][0], None, ends[c][1], None) for c in range(len(CUBES))])
+\end{lstlisting}
+
+A 2-factor splits into closed loops. \code{orient} walks each loop and gives
+each cube a direction: the colour where the walk enters becomes one side and
+the colour where it leaves becomes the opposite side. Because a walk enters and
+leaves every dot once, each colour shows once on each side.
+\code{draw\_tower} draws the result with left and right left blank (\code{None}).
+
+\code{tower\_from(cubes, choice)} does the same for a full answer (one
+\code{CHOICES} entry per cube) and returns a tower you can check with
+\code{solves}. Not all 4 front/back 2-factors can be completed: the matching
+left/right 2-factor must avoid each cube's front/back line.
+
+%======================================================================
+\section{A cost function (Section 4)}
+%======================================================================
+
+\subsection{Variables}
+
+To hand the puzzle to an optimizer, every choice becomes a 0/1 variable:
+\[
+x_{c,p} = 1 \text{ if cube } c \text{ uses pair } p \text{ on front/back},\qquad
+y_{c,p} = 1 \text{ if cube } c \text{ uses pair } p \text{ on left/right}.
+\]
+That is $6$ variables per cube, $24$ for four cubes. This is called a
+\textbf{one-hot} encoding, because a valid choice has exactly one 1 in each
+group of three.
+
+\subsection{The cost}
+
+\[
+C(x,y) = \lambda \sum_c \Big[\big(\textstyle\sum_p x_{c,p} - 1\big)^2
+       + \big(\sum_p y_{c,p} - 1\big)^2\Big]
+     + \mu \sum_{c,p} x_{c,p}\, y_{c,p}
+     + \sum_{z \in \{x,y\}} \sum_{k} \big(d_k(z) - 2\big)^2
+\]
+where $d_k(z)$ is the degree of colour $k$ for the picks in $z$. Each term is a
+square or a product of 0/1 values, so it is never negative, and it is zero only
+when its rule is satisfied:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Term & Rule it enforces \\
+\midrule
+$\lambda(\sum_p x_{c,p} - 1)^2$ & cube $c$ picks exactly one front/back pair \\
+$\lambda(\sum_p y_{c,p} - 1)^2$ & cube $c$ picks exactly one left/right pair \\
+$\mu\, x_{c,p} y_{c,p}$ & a pair cannot serve both axes \\
+$(d_k - 2)^2$ & colour $k$ is touched exactly twice (2-factor) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+So $C = 0$ exactly when every rule holds, i.e.\ for a solved tower. A cost made
+of squared and pairwise terms in 0/1 variables is called a \textbf{QUBO}
+(quadratic unconstrained binary optimization). The weights $\lambda$ and $\mu$
+(\code{LAMBDA = MU = 2}) set how strongly each rule is punished.
+
+\begin{lstlisting}
+LAMBDA, MU = 2, 2
+
+
+def cost(cubes, x, y):
+    """x[c][p], y[c][p] are 0/1. Zero exactly for a solved tower."""
+    total = 0
+    for c in range(len(cubes)):
+        total += LAMBDA * ((sum(x[c]) - 1) ** 2 + (sum(y[c]) - 1) ** 2)
+        total += MU * sum(x[c][p] * y[c][p] for p in range(3))
+    for picks in (x, y):
+        for k in COLOURS:
+            d = sum(cubes[c][p].count(k) * picks[c][p]
+                    for c in range(len(cubes)) for p in range(3))
+            total += (d - 2) ** 2
+    return total
+
+
+def one_hot(p):
+    return [int(i == p) for i in range(3)]
+\end{lstlisting}
+
+The code is a line-by-line copy of the formula. \code{cubes[c][p].count(k)} is
+how many times colour $k$ appears in that pair (0, 1 or 2), so \code{d} is the
+degree $d_k$. \code{one\_hot(1)} returns \code{[0, 1, 0]}. A random candidate
+scores 8 in the saved output.
+
+\subsection{Checking the cost classically}
+
+\begin{lstlisting}
+scores = []
+for fb in itertools.product(range(3), repeat=len(CUBES)):
+    for lr in itertools.product(range(3), repeat=len(CUBES)):
+        scores.append(cost(CUBES, [one_hot(p) for p in fb], [one_hot(p) for p in lr]))
+\end{lstlisting}
+
+This scores every candidate with one pair per axis per cube:
+$3^4 \times 3^4 = 6{,}561$ of them. The output is
+\emph{6,561 candidates, 2 at cost 0, lowest nonzero cost 2}. The two zeros are
+the answer and its quarter turn (front/back and left/right swapped).
+
+\textbf{Why this matters:} if a wrong tower also scored zero, every optimizer,
+quantum or classical, would happily return it. The challenge rules ask you to
+run this kind of check on any new encoding \emph{before} any quantum run.
+
+%======================================================================
+\section{From cost to qubits (Section 5)}
+%======================================================================
+
+\subsection{\texorpdfstring{From bits to Pauli $Z$}{From bits to Pauli Z}}
+
+A qubit measured in state $|0\rangle$ or $|1\rangle$ gives one bit. The Pauli
+$Z$ operator has value $+1$ on $|0\rangle$ and $-1$ on $|1\rangle$, so
+\[
+x = \frac{1 - Z}{2}
+\quad\text{gives}\quad x = 0 \text{ on } |0\rangle,\; x = 1 \text{ on } |1\rangle.
+\]
+Replace every variable in $C$ by this expression and the cost becomes an
+operator $H$ (a \textbf{Hamiltonian}). Its lowest-energy state (the
+\textbf{ground state}) is the solved tower. Because $C$ is at most quadratic,
+$H$ only contains single $Z$ terms and $ZZ$ pairs.
+
+\subsection{The code}
+
+\begin{lstlisting}
+from qiskit.quantum_info import SparsePauliOp
+
+
+def build_hamiltonian(cubes, lam=LAMBDA, mu=MU):
+    n = 6 * len(cubes)
+    one = SparsePauliOp("I" * n)
+
+    def var(q):  # the 0/1 variable on qubit q, as (1 - Z) / 2
+        return SparsePauliOp.from_sparse_list([("", [], 0.5), ("Z", [q], -0.5)], n)
+
+    xs = [[var(6 * c + p) for p in range(3)] for c in range(len(cubes))]
+    ys = [[var(6 * c + 3 + p) for p in range(3)] for c in range(len(cubes))]
+    H = 0 * one
+    for c in range(len(cubes)):
+        for row in (xs[c], ys[c]):
+            pick = sum(row, -1 * one)
+            H += lam * (pick @ pick)
+        H += mu * sum(xs[c][p] @ ys[c][p] for p in range(3))
+    for picks in (xs, ys):
+        for k in COLOURS:
+            d = -2 * one
+            for c, cube in enumerate(cubes):
+                for p in range(3):
+                    if cube[p].count(k):
+                        d += cube[p].count(k) * picks[c][p]
+            H += d @ d
+    return H.simplify()
+\end{lstlisting}
+
+\begin{itemize}
+  \item \code{SparsePauliOp} stores an operator as a sum of Pauli strings with
+        coefficients. \code{one} is the identity on all $n$ qubits.
+  \item \code{var(q)} builds $(1 - Z_q)/2$: a constant $0.5$ (the empty
+        Pauli string) plus $-0.5\,Z_q$.
+  \item \textbf{Qubit layout:} cube $c$ uses qubits $6c$ to $6c+5$. Qubits
+        $6c + p$ hold $x_{c,p}$ (front/back) and qubits $6c + 3 + p$ hold
+        $y_{c,p}$ (left/right).
+  \item \code{@} multiplies operators, so \code{pick @ pick} is the square
+        $(\sum_p x_{c,p} - 1)^2$. \code{sum(row, -1 * one)} starts the sum at
+        $-1$.
+  \item Each block mirrors one term of the cost function in Section 4.
+  \item \code{simplify()} merges equal Pauli strings and drops zeros.
+\end{itemize}
+
+Output: \emph{24 qubits, 153 Pauli terms, largest term size: 2} (so at most
+$ZZ$, as expected).
+
+\subsection{\texorpdfstring{Checking $H$ against the cost}{Checking H against the cost}}
+
+\begin{lstlisting}
+def energy(H, bits):
+    """Value of a Z-only Hamiltonian on a bitstring; bits[q] is qubit q."""
+    total = 0.0
+    for label, coeff in zip(H.paulis.to_labels(), H.coeffs):
+        sign = 1
+        for q, op in enumerate(reversed(label)):  # Qiskit labels put qubit 0 last
+            if op == "Z" and bits[q]:
+                sign = -sign
+        total += coeff.real * sign
+    return total
+\end{lstlisting}
+
+A Hamiltonian made only of $Z$ operators is \textbf{diagonal}: on a single
+bitstring its value is plain arithmetic. Each $Z_q$ contributes $-1$ if bit $q$
+is 1 and $+1$ otherwise, so a term's sign flips once per $Z$ on a 1-bit.
+
+\textbf{Bit order:} Qiskit writes Pauli labels (and measurement results) with
+qubit 0 as the \emph{rightmost} character. That is why the loop uses
+\code{reversed(label)}.
+
+The next cell evaluates $H$ and \code{cost} on 200 random bitstrings, including
+invalid ones, and reports the largest difference: \emph{0.0e+00}. So the
+Hamiltonian is exactly the puzzle.
+
+\paragraph{Size.} 24 qubits means $2^{24} \approx 16.8$ million amplitudes.
+SV1 handles that, a laptop slows down, and only 2 of those bitstrings are
+answers. Section 6 therefore works on a smaller version first.
+
+%======================================================================
+\section{A first quantum run (Section 6)}
+%======================================================================
+
+Section 6 solves only the \emph{front/back} half with QAOA on 12 qubits
+(3 per cube, qubit $3c+p$ is $x_{c,p}$).
+
+\subsection{QAOA in one paragraph}
+
+QAOA (Quantum Approximate Optimization Algorithm) prepares a starting state,
+then repeats $p$ rounds of two layers:
+\[
+|\psi(\gamma,\beta)\rangle
+  = U_M(\beta_p)\,U_C(\gamma_p)\cdots U_M(\beta_1)\,U_C(\gamma_1)\,|\psi_0\rangle,
+\qquad U_C(\gamma) = e^{-i\gamma H},\quad U_M(\beta) = e^{-i\beta M}.
+\]
+The \textbf{cost layer} $U_C$ gives each bitstring a phase that depends on its
+energy. The \textbf{mixer} $U_M$ moves amplitude between bitstrings so those
+phases turn into changes of probability. A classical optimizer tunes the angles
+$\gamma, \beta$ to make low-energy bitstrings likely. Measuring then samples
+answers.
+
+\subsection{Building blocks}
+
+\begin{lstlisting}
+def cost_layer(qc, H, gamma):
+    """exp(-i gamma H) for a Hamiltonian of Z and ZZ terms."""
+    for label, coeff in zip(H.paulis.to_labels(), H.coeffs):
+        qubits = [q for q, op in enumerate(reversed(label)) if op == "Z"]
+        if len(qubits) == 1:
+            qc.rz(2 * gamma * coeff.real, qubits[0])
+        elif len(qubits) == 2:
+            qc.rzz(2 * gamma * coeff.real, *qubits)
+\end{lstlisting}
+
+All terms of $H$ commute (they are all $Z$'s), so $e^{-i\gamma H}$ is a product
+of one small gate per term. Qiskit defines
+$R_Z(\theta) = e^{-i\theta Z/2}$ and $R_{ZZ}(\theta) = e^{-i\theta ZZ/2}$, so the
+term $c\,Z$ needs angle $\theta = 2\gamma c$. That is where the factor 2 comes
+from. The identity term only adds a global phase, which cannot be measured, so
+it is skipped.
+
+\begin{lstlisting}
+def front_back_hamiltonian(cubes, lam=0):
+    """Degree rule on the x variables only; lam adds the one-pair-per-cube penalty."""
+    ...
+    for k in COLOURS:
+        d = -2 * one
+        for c, cube in enumerate(cubes):
+            for p in range(3):
+                d += cube[p].count(k) * var(3 * c + p)
+        H += d @ d
+    for c in range(len(cubes)):
+        pick = sum((var(3 * c + p) for p in range(3)), -1 * one)
+        H += lam * (pick @ pick)
+    return H.simplify()
+
+
+GOOD = solution_strings(front_back)     # 4 good bitstrings
+\end{lstlisting}
+
+This is the 12-qubit version: only the 2-factor rule on the $x$ variables. With
+\code{lam=0} there is no one-pair-per-cube penalty, which is fine when the
+circuit itself never leaves the valid choices (Section~\ref{sec:constrained}).
+\code{GOOD} turns the 4 front/back 2-factors into the bitstrings a measurement
+would return, in Qiskit order.
+
+\subsection{Textbook QAOA}
+
+\begin{lstlisting}
+H_pen = front_back_hamiltonian(CUBES, lam=2)
+plain = QuantumCircuit(N_Q)
+plain.h(range(N_Q))              # |+> on every qubit
+cost_layer(plain, H_pen, gamma)
+plain.rx(2 * beta, range(N_Q))   # standard X mixer
+\end{lstlisting}
+
+\begin{itemize}
+  \item Hadamards put every qubit in $|+\rangle$: an equal spread over all
+        $2^{12} = 4{,}096$ bitstrings.
+  \item $R_X(2\beta) = e^{-i\beta X}$ on every qubit is the standard mixer.
+  \item Most of the 4,096 bitstrings pick 0, 2 or 3 pairs for some cube, so the
+        Hamiltonian needs the penalty (\code{lam=2}) to push them up.
+\end{itemize}
+
+The helper \code{scan} tries a $25 \times 13$ grid of $(\gamma, \beta)$ at
+$p=1$:
+
+\begin{lstlisting}
+def scan(template, H, gammas, betas):
+    costs, wins = diagonal(H), [int(s, 2) for s in GOOD]
+    ...
+            probs = Statevector(template.assign_parameters({gamma: g, beta: b})).probabilities()
+            avg[i, j], hit[i, j] = probs @ costs, probs[wins].sum()
+\end{lstlisting}
+
+\code{Statevector} computes the exact quantum state, so there are no shots and
+no sampling noise. \code{diagonal(H)} lists the energy of every bitstring, so
+\code{probs @ costs} is the \emph{average} energy $\langle H\rangle$ and
+\code{probs[wins].sum()} is the chance of measuring a good bitstring.
+
+Result: \emph{P(good pick) 1.38\% (random guess 0.10\%)}. That is about 14
+times better than guessing, but still wrong 99 times in 100: most amplitude
+sits on invalid bitstrings.
+
+\subsection{Constrained QAOA: W states and the XY mixer}
+\label{sec:constrained}
+
+Idea: never leave the valid choices. Start each cube in the \textbf{W state}
+\[
+|W\rangle = \tfrac{1}{\sqrt3}\big(|001\rangle + |010\rangle + |100\rangle\big),
+\]
+an equal spread over that cube's 3 one-hot choices.
+
+\begin{lstlisting}
+def w_state(qc, a, b, c):
+    """Equal spread over |100>, |010>, |001> on qubits a, b, c."""
+    qc.ry(2 * np.arcsin(1 / np.sqrt(3)), a)
+    qc.append(RYGate(np.pi / 2).control(1, ctrl_state=0), [a, b])
+    qc.append(XGate().control(2, ctrl_state="00"), [a, b, c])
+\end{lstlisting}
+
+\begin{enumerate}
+  \item $R_Y(\theta)|0\rangle = \cos\tfrac\theta2|0\rangle + \sin\tfrac\theta2|1\rangle$.
+        With $\sin\tfrac\theta2 = 1/\sqrt3$, qubit $a$ is 1 with probability $1/3$.
+  \item If $a$ is 0 (\code{ctrl\_state=0} means ``control on 0''), rotate $b$ by
+        $\pi/2$: it becomes 1 with probability $1/2$ of the remaining $2/3$,
+        i.e.\ $1/3$.
+  \item If both $a$ and $b$ are 0, flip $c$ to 1 (the last $1/3$).
+\end{enumerate}
+Each of the three one-hot strings now has probability $1/3$.
+
+\begin{lstlisting}
+def xy_mixer(qc, beta, cubes):
+    for c in range(len(cubes)):
+        q = [3 * c, 3 * c + 1, 3 * c + 2]
+        for i, j in ((0, 1), (0, 2), (1, 2)):
+            qc.append(XXPlusYYGate(2 * beta), [q[i], q[j]])
+\end{lstlisting}
+
+The \code{XXPlusYYGate} mixes $|01\rangle$ and $|10\rangle$ on two qubits and
+leaves $|00\rangle$ and $|11\rangle$ alone. It moves a 1 from one qubit to
+another without creating or removing one, so the number of 1s per cube stays
+exactly one. Applied to each pair of a cube's qubits, it lets amplitude flow
+between all three choices.
+
+\begin{lstlisting}
+def constrained_qaoa(H, gammas, betas, cubes=CUBES):
+    qc = QuantumCircuit(3 * len(cubes))
+    for c in range(len(cubes)):
+        w_state(qc, 3 * c, 3 * c + 1, 3 * c + 2)
+    for g, b in zip(gammas, betas):
+        qc.barrier(label="cost")
+        cost_layer(qc, H, g)
+        qc.barrier(label="mixer")
+        xy_mixer(qc, b, cubes)
+    return qc
+\end{lstlisting}
+
+One W state per cube, then $p$ rounds of cost layer and XY mixer. The circuit
+now only explores the $3^4 = 81$ valid picks, so a random valid pick succeeds
+with probability $4/81 \approx 4.9\%$. Barriers only label the drawing.
+
+\subsection{Choosing the angles}
+
+\paragraph{\texorpdfstring{Grid scan, $p=1$.}{Grid scan, p=1.}}
+\begin{lstlisting}
+xy = constrained_qaoa(H_fb, [gamma], [beta])
+gammas, betas = np.linspace(0, np.pi, 41), np.linspace(0, np.pi, 41)
+avg, hit = scan(xy, H_fb, gammas, betas)
+\end{lstlisting}
+Best angles $\gamma \approx 2.827$, $\beta \approx 0.236$; \emph{P(good pick)
+18.8\% (random valid pick 4.9\%)}. The heatmap has several valleys. A local
+optimizer started in the wrong valley gets stuck there, so a coarse scan comes
+first.
+
+\paragraph{\texorpdfstring{COBYLA, $p=2$.}{COBYLA, p=2.}}
+\begin{lstlisting}
+def average_cost(angles):
+    p = len(angles) // 2
+    probs = Statevector(constrained_qaoa(H_fb, angles[:p], angles[p:])).probabilities()
+    history.append(probs @ costs)
+    return history[-1]
+
+
+result = minimize(average_cost, [g1, g1, b1, b1], method="COBYLA", options={"maxiter": 200})
+\end{lstlisting}
+\code{angles} holds $[\gamma_1, \gamma_2, \beta_1, \beta_2]$. COBYLA is a
+SciPy optimizer that needs no gradients. It starts from the $p=1$ angles
+repeated. Result: \emph{p=2 after 125 evaluations: average cost 1.56, P(good
+pick) 28.4\%}.
+
+This is the \textbf{hybrid loop} of QAOA: the quantum part prepares the state
+and produces samples; the classical part (COBYLA) chooses the angles.
+
+\subsection{Running with shots}
+
+\begin{lstlisting}
+def run_on_qbraid(circuit, shots=1000):
+    """Prepare the circuit, send it with your submit_job, return counts in Qiskit order."""
+    qc = prepare(circuit)
+    raw = submit_job(qc, shots)
+    if raw is None:
+        print("submit_job returned nothing yet, so this ran on the local Aer simulator.")
+        raw = AerSimulator(seed_simulator=SEED).run(qc, shots=shots).result().get_counts()
+    return strip_marker(raw)
+\end{lstlisting}
+
+\begin{itemize}
+  \item \code{prepare} (helper) adds a \emph{marker qubit} fixed at 1, measures
+        every qubit, and transpiles to the basic gates
+        \code{["rz", "sx", "x", "cx"]}. Custom gates like the W-state and XY
+        gates are not available on every device. The marker shows which end of
+        the result string is which, because providers do not all order bits the
+        same way.
+  \item \code{strip\_marker} removes the marker and returns counts in Qiskit
+        order (qubit 0 rightmost).
+  \item If \code{submit\_job} returns \code{None}, the circuit runs on the local
+        \code{AerSimulator} instead, for free.
+\end{itemize}
+
+\paragraph{\code{submit\_job}: your part.}
+\begin{lstlisting}
+SV1 = "aws:aws:sim:sv1"
+
+
+def submit_job(qc, shots):
+    """Your code: run qc on a qBraid device and return its counts dictionary."""
+    # 1. create a provider for your qBraid account
+    # 2. get the device with id SV1 and print its status
+    # 3. run qc with this many shots, print the job id, and return the counts
+    return None
+\end{lstlisting}
+This stub is left for your team. The three comments are the steps.
+\code{resources/02\_qbraid\_sdk.ipynb} and the qBraid provider guide show the
+API you need. Remember to print the job ID; it goes in your results table.
+Running on SV1 costs credits.
+
+\paragraph{The result.}
+\begin{lstlisting}
+counts = run_on_qbraid(constrained_qaoa(H_fb, best[:2], best[2:]), shots=shots)
+good = sum(counts.get(s, 0) for s in GOOD)
+\end{lstlisting}
+With the local fallback: \emph{282 of 1000 shots are good picks (28.2\%); exact
+value 28.4\%}. With shots, the measured fraction wobbles around the exact
+probability.
+
+\textbf{Reading a result string:} read right to left in groups of three. The
+first (rightmost) group is cube 1, and the position of its 1 is the chosen pair.
+
+%======================================================================
+\section{Your challenge and the bonus generator (Section 7)}
+%======================================================================
+
+\subsection{Making N-cube puzzles}
+
+\begin{lstlisting}
+def make_puzzle(n, seed):
+    """N cubes, N colours, a planted answer: two random cycles through all colours."""
+    rng = random.Random(seed)
+    letters = "".join(chr(ord("A") + i) for i in range(n))
+    cycles = []
+    for _ in range(2):
+        order = rng.sample(letters, n)
+        lines = [order[i] + order[(i + 1) % n] for i in range(n)]
+        rng.shuffle(lines)
+        cycles.append(lines)
+    cubes = []
+    for i in range(n):
+        third = rng.choice(letters) + rng.choice(letters)
+        pairs = ["".join(rng.sample(pair, 2)) for pair in (cycles[0][i], cycles[1][i], third)]
+        rng.shuffle(pairs)
+        cubes.append(pairs)
+    return cubes
+\end{lstlisting}
+
+\begin{itemize}
+  \item Colours are named \code{A}, \code{B}, \ldots
+  \item It builds two random loops through all $n$ colours. A single loop
+        through every dot is a 2-factor, so these two loops are a
+        \emph{planted} answer.
+  \item Cube $i$ gets one line from each loop plus a random third pair, with
+        the letters and pairs shuffled so the answer is hidden.
+\end{itemize}
+Every generated puzzle has at least one answer, but it may have more.
+
+\subsection{Counting answers}
+
+\begin{lstlisting}
+def count_answers(cubes):
+    """How many of the 6**n cases solve the puzzle."""
+    letters = sorted({ch for cube in cubes for pair in cube for ch in pair})
+    total = 0
+    for choice in itertools.product(CHOICES, repeat=len(cubes)):
+        for side in (0, 1):
+            deg = dict.fromkeys(letters, 0)
+            for cube, pick in zip(cubes, choice):
+                for ch in cube[pick[side]]:
+                    deg[ch] += 1
+            if any(d != 2 for d in deg.values()):
+                break
+        else:
+            total += 1
+    return total
+\end{lstlisting}
+
+This is the graph method from Section 3, generalized: try all $6^n$ choices
+and check that both the front/back picks (\code{side = 0}) and the left/right
+picks (\code{side = 1}) are 2-factors. The \code{for ... else} adds to
+\code{total} only if the loop did not \code{break}, i.e.\ both sides passed.
+
+\begin{lstlisting}
+BONUS = {5: 16, 6: 86, 7: 68, 8: 4}
+\end{lstlisting}
+
+These seeds give puzzles with exactly one tower (2 cases: the tower and its
+quarter turn). Saved output:
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+$N$ & cases ($6^N$) & answers & time & one-hot qubits ($6N$) \\
+\midrule
+5 & 7,776 & 2 & 0.0 s & 30 \\
+6 & 46,656 & 2 & 0.1 s & 36 \\
+7 & 279,936 & 2 & 0.6 s & 42 \\
+8 & 1,679,616 & 2 & 4.1 s & 48 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The classical search grows by $6\times$ per cube, and the one-hot encoding needs
+6 qubits per cube. SV1 simulates at most 34 qubits, so the one-hot encoding
+cannot go past $N = 5$ there. This is why the notebook suggests looking for
+smaller encodings.
+
+\subsection{What is left for you}
+\begin{itemize}
+  \item \textbf{Core:} add left/right and find a full solved tower with a quantum
+        algorithm, run it on SV1, and report success rate, qubits, two-qubit
+        gates, depth, credits, and the random-guess baseline.
+  \item \textbf{Bonus:} generalize to $N$ cubes and colours, using
+        \code{make\_puzzle} and \code{count\_answers}.
+\end{itemize}
+
+%======================================================================
+\appendix
+\section{Quick reference}
+%======================================================================
+
+\begin{center}
+\begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
+\toprule
+Name & What it does \\
+\midrule
+\code{CUBES}, \code{COLOURS} & The four-cube puzzle and the colour letters \\
+\code{orientations}, \code{solves} & The 24 views of a cube; the four-sides check \\
+\code{CHOICES} & The 6 valid (front/back, left/right) choices per cube \\
+\code{degrees}, \code{is\_two\_factor} & Colour degrees of a pick; the 2-factor test \\
+\code{front\_back} & The 4 front/back 2-factors \\
+\code{orient}, \code{tower\_from} & Turn picks into front/back colours or a full tower \\
+\code{cost} & The QUBO cost, zero only for a solved tower \\
+\code{build\_hamiltonian} & 24-qubit Hamiltonian (qubit $6c+p$ = $x$, $6c+3+p$ = $y$) \\
+\code{front\_back\_hamiltonian} & 12-qubit warm-up Hamiltonian (qubit $3c+p$) \\
+\code{energy}, \code{diagonal} & Value of a $Z$-only $H$ on one bitstring / on all \\
+\code{cost\_layer} & $e^{-i\gamma H}$ from \code{rz} and \code{rzz} gates \\
+\code{w\_state}, \code{xy\_mixer} & One-hot-preserving start state and mixer \\
+\code{constrained\_qaoa} & The warm-up QAOA circuit \\
+\code{prepare}, \code{strip\_marker} & Transpile with a marker qubit; remove it after \\
+\code{run\_on\_qbraid}, \code{submit\_job} & Run a circuit; \code{submit\_job} is yours to write \\
+\code{make\_puzzle}, \code{count\_answers} & Bonus puzzle generator and brute-force counter \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Qiskit bit order.} In Pauli labels and measurement count keys,
+qubit 0 is the \emph{rightmost} character. Test any decoder on a known answer
+before trusting it.
+
+\end{document}
