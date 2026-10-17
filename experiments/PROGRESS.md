@@ -12,6 +12,32 @@ four-cube instance from the starter notebook (N = 4).
 **Baselines** (same for every round): random legal pick 2/1296 = 0.154%;
 random 24-bit string 2/2²⁴ ≈ 1.2 × 10⁻⁷.
 
+## Final result (loop stopped after round 4)
+
+![Accepted rounds](results/progress.png)
+
+| Round | One change | Accepted result | Teacher reviews |
+|---|---|---|---|
+| 1 | Harness reproducing the notebook | 26.246% exact, 25.3% Aer, 4590 CX | — |
+| 2 | Reduced Hamiltonian (exact rewrite, same angles) | 26.246% (identical), **1958 CX (−57%)**, depth 911 (−46%) | not yet → not yet → ✅ |
+| 3 | Full vs ring XY mixer | Full stays: 26.37% vs 7.67% median; ring saves 504 CX but loses 18.7 pts | ✅ |
+| 4 | Gibbs training objective | **35.12% median** [35.11, 35.12], 1958 CX | ✅ |
+
+**Net change vs round 1:** exact P(solved) 26.246% → 35.12% (+8.87
+points, +34%); CX 4590 → 1958 (−57%). Random legal pick: 0.154%.
+
+**Still owed (from the teacher's final review):**
+- Port the accepted changes into the notebook and confirm it gives exactly
+  35.12% at the saved round-4 angles **without retraining**.
+- Add one seeded Aer shot rate, the baselines and the GRADING-call CX/depth
+  to the README.
+- Every team member should be able to explain why P(solved) rose while the
+  average cost got worse (2.12 → 2.73).
+- Minor test flaw: one histogram assert in `tests_round4.py` sits behind an
+  `if` and can be skipped silently.
+
+Not done, by design: η tuning, more studies, any qBraid/SV1 run.
+
 ## Scoreboard
 
 | Round | Variant | Exact P(solved) | Aer 1000 shots | Qubits | CX | Depth | Transpile |
@@ -177,6 +203,29 @@ min and max. The student writes the test first: the objective depends only
 on the cost histogram, and every P(solved) recomputes from stored angles.
 The teacher refused to name the objective, set a target, re-run training,
 or write the test.
+
+## Round 4 — training objective (one change)
+
+The student wrote `experiments/tests_round4.py` **first**. Red before
+implementing: `5 failed, 2 errors`; green after: `7 passed`; full suite
+81 passed. Objective chosen: **Gibbs**, −log Σ p·e^(−C) with η = 1,
+computed from the cost histogram only. Same setup as the round-3 full
+mixer.
+
+| Objective | P(solved), seeds 0–4 | Median [min, max] | CX | Depth |
+|---|---|---|---|---|
+| Average cost (accepted round 3) | 26.48 / 26.29 / 26.31 / 26.37 / 26.37% | 26.37% [26.29, 26.48] | 1958 | 914 |
+| Gibbs, η = 1 | 35.12 / 35.11 / 35.12 / 35.12 / 35.12% | 35.12% [35.11, 35.12] | 1958 | 907 |
+
+The average cost got *worse* (2.12 → 2.73) while P(solved) rose. The Gibbs
+objective trades a worse average for more weight on cost-0 states. No Aer
+run; no winner picked by the student.
+
+**Course answer:** the W state and mixer enforce "one legal choice per
+cube," so the remaining colour-degree rule is entirely penalty. There is no
+separate objective to optimize, only constraints to satisfy.
+
+The teacher's review is pending.
 
 **What we learned (provisional):** the training objective mattered more than the mixer
 shape. Fewer two-qubit gates came from removing terms that are constant on

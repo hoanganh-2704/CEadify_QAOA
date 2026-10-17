@@ -208,11 +208,51 @@ def round3():
                          "mixers": mixers})
 
 
+# ---------------------------------------------------------------- round 4: objective only
+
+ROUND4_OBJECTIVE = "gibbs1"
+
+
+def round4():
+    costs, solved = problem()
+    pairs = S.MIXERS["full"]
+    H = S.reduced_hamiltonian(S.CUBES, ROUND3_GAUGE)
+    start = S.grid_p1(costs, solved, pairs=pairs)
+    runs = []
+    for seed in MIXER_SEEDS:
+        t0 = time.perf_counter()
+        angles, curve = S.train_layerwise(costs, solved, P_MAX, pairs,
+                                          S.OBJECTIVES[ROUND4_OBJECTIVE],
+                                          jitter_seed=seed, jitter=JITTER, start=start)
+        runs.append({"seed": seed, "p_solved": curve[-1][2], "avg_cost": curve[-1][1],
+                     "train_s": time.perf_counter() - t0, "angles": angles.tolist()})
+        print(f"  seed {seed}: P(solved) {curve[-1][2]:.4%}  <C> {curve[-1][1]:.4f}")
+    ps = [r["p_solved"] for r in runs]
+    median_run = sorted(runs, key=lambda r: r["p_solved"])[len(runs) // 2]
+    angles = np.array(median_run["angles"])
+    circuit = S.tower_qaoa(S.CUBES, H, angles[:P_MAX], angles[P_MAX:], pairs)
+    metrics = grading_metrics(circuit)[1]
+    print(f"median {np.median(ps):.4%}  min {min(ps):.4%}  max {max(ps):.4%}  "
+          f"CX {metrics['cx_grading']}  depth {metrics['depth_grading']}")
+    round3_full = json.loads((RESULTS / "round3.json").read_text())["mixers"]["full"]
+    save("round4.json", {
+        "objective": ROUND4_OBJECTIVE, "eta": 1.0, "mixer": "full",
+        "hamiltonian": f"reduced_{ROUND3_GAUGE}", "jitter": JITTER, "p": P_MAX,
+        "seeds": list(MIXER_SEEDS), "grid_start": list(start), "runs": runs,
+        "median": float(np.median(ps)), "min": min(ps), "max": max(ps),
+        "circuit_angles_seed": median_run["seed"], **metrics,
+        "transpile_call": 'transpile(qc, basis_gates=["rz","sx","x","cx"])',
+        "comparison_round3_full_average": {k: round3_full[k] for k in ("median", "min", "max")},
+    })
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "3"
+    which = sys.argv[1] if len(sys.argv) > 1 else "4"
     if which == "1":
         round1("--no-aer" not in sys.argv)
     elif which == "2":
         round2()
-    else:
+    elif which == "3":
         round3()
+    else:
+        round4()

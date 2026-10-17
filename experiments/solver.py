@@ -278,7 +278,28 @@ def objective_cvar(probs, costs, alpha=0.1):
 
 
 def objective_gibbs(probs, costs, eta=1.0):
+    """-log E[exp(-eta C)]: low costs dominate the sum, so moving weight to cost 0
+    counts far more than moving it from 10 to 4. Uses only the costs."""
     return float(-np.log(np.sum(probs * np.exp(-eta * costs))))
+
+
+def cost_histogram(counts, cubes):
+    """{cost: shots} from measured Qiskit counts. Only each bitstring's cost is kept;
+    shots that are not one-hot have no legal cost and are left out."""
+    costs = cost_tensor(cubes)
+    hist = {}
+    for bits, shots in counts.items():
+        choice = decode(bits, len(cubes))
+        if choice is not None:
+            cost = float(costs[tuple(choice)])
+            hist[cost] = hist.get(cost, 0) + shots
+    return hist
+
+
+def gibbs_from_histogram(hist, eta=1.0):
+    """The Gibbs objective computed from a {cost: weight} histogram (shots or probabilities)."""
+    total = sum(hist.values())
+    return float(-np.log(sum(w * np.exp(-eta * c) for c, w in hist.items()) / total))
 
 
 OBJECTIVES = {"average": objective_average, "cvar0.1": objective_cvar,
