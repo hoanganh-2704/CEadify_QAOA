@@ -145,6 +145,39 @@ N(0, 0.05), seeds 0–4 for both. Report each run plus median/min/max and
 GRADING CX/depth in `round3.json`; pick no winner; write `round3_note.md`.
 Red test: `experiments/tests_round3_review.py`.
 
+## Round 3 — full vs ring XY mixer (one change)
+
+Setup for both: per-pair-reference reduced H, average-cost objective,
+p = 7, start-angle jitter N(0, 0.05), seeds 0–4. CX/depth from the GRADING
+call on each mixer's median-seed circuit. No Aer run this round.
+
+| Mixer | P(solved), seeds 0/1/2/3/4 | Median [min, max] | CX | Depth |
+|---|---|---|---|---|
+| Full (15 pairs per cube) | 26.48 / 26.29 / 26.31 / 26.37 / 26.37% | 26.37% [26.29, 26.48] | 1958 | 914 |
+| Ring (6 pairs per cube) | 7.67 / 7.65 / 7.67 / 7.67 / 7.67% | 7.67% [7.65, 7.67] | 1454 | 760 |
+
+The spreads don't overlap. The ring saves 504 CX (−26%) but loses about
+18.7 points of success. The student picked no winner, as the protocol
+requires. Student's pytest: 74 passed.
+
+**✅ Round 3 accepted** (first review under the v3 course-standard prompt).
+The teacher checked that every P(solved) recomputes from its stored angles
+and that both mixers used seeds 0–4 and the same objective (its run of
+`tests_round3_review.py`: 8 passed). Conclusive for the average-cost
+objective: **keep the full mixer.**
+
+**Course question the student owes:** which constraints are already
+enforced by the W state and mixer, and which remain in the cost
+Hamiltonian? Is anything left a real objective, or is it all penalty?
+
+**Assignment for round 4, asked as a question:** which training objective,
+computed only from the costs of measured bitstrings, weights cost-0 states
+more than the average does? Full mixer, seeds 0–4, p = 7; report median,
+min and max. The student writes the test first: the objective depends only
+on the cost histogram, and every P(solved) recomputes from stored angles.
+The teacher refused to name the objective, set a target, re-run training,
+or write the test.
+
 **What we learned (provisional):** the training objective mattered more than the mixer
 shape. Fewer two-qubit gates came from removing terms that are constant on
 the legal states, not from a sparser mixer.

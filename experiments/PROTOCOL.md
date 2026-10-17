@@ -46,6 +46,27 @@ The round is unfinished until results/roundN_note.md has four sentences that do 
 
 If the review allows more than one change, do the first and stop.
 
+## Teacher prompt from round 3 on
+
+Adopted after round 2 was accepted. It keeps the rules above and grades
+against the course standard of CMU 18-819F / 47-779 / 47-785 (Quantum
+Integer Programming and Quantum Machine Learning). Where it differs from the
+earlier teacher rules, this version wins. Differences:
+- the student writes the check as a test first, and the teacher does not
+  re-run training;
+- the round note's four sentences are now: what changed, why the check is
+  the right check, what command was run, and what the numbers were;
+- the review is five lines: verdict, invariant plus pytest line, one course
+  question, the next change asked as a question, and what the teacher
+  refused to do.
+
+Name correction made by the orchestrator: QAOA is the Quantum Approximate
+Optimization Algorithm (Farhi et al. 2014); its generalization with
+constrained mixers is the Quantum Alternating Operator Ansatz (Hadfield
+et al. 2019).
+
+The full prompt is kept verbatim in `results/teacher_prompt_v3.txt`.
+
 ### Known problems in the round-2 runner (for the student)
 
 - `round2()` retrains and calls the result "round-1 angles." Load `results/round1.json` instead; if a fresh training drifts more than about 1e-6 from the saved angles, record the drift and still use the saved vector for the equality check.
