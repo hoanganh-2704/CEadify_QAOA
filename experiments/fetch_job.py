@@ -20,14 +20,17 @@ from qbraid.runtime import QbraidJob  # noqa: E402
 RANDOM_POST_SELECTED = 16 / 216
 
 
-def main(job_id, label):
+def main(job_id, label, n_cubes=3):
     job = QbraidJob(job_id)
     status = job.status()
     print(f"{job_id}: {status.name}")
     if status.name != "COMPLETED":
         return
     counts = job.result().data.get_counts()
-    cubes = json.loads((REPO / "experiments" / "results" / "round7.json").read_text())["cubes"]
+    if n_cubes == 4:  # the starter's four-cube puzzle
+        cubes = solver.CUBES
+    else:  # make_puzzle(3, 0), as in rounds 7-9
+        cubes = json.loads((REPO / "experiments" / "results" / "round7.json").read_text())["cubes"]
     row = solver.results_row(counts, cubes, marker=True, device=job_id.split("-8876-")[0].split("-d8ed-")[0],
                              label=label)
     row.update(job_id=job_id, random_post_selected=RANDOM_POST_SELECTED, raw_counts=counts)
@@ -40,4 +43,4 @@ def main(job_id, label):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 3)

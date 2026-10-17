@@ -94,7 +94,9 @@ run could be inconclusive.
 
 | 3 | 2026-10-17 | `aws:ionq:qpu:forte-enterprise-1` | 1 (N = 3) | 19 (18 + marker) | IonQ native (recompiled) | 100 | `aws:ionq:qpu:forte-enterprise-1-d8ed-qjob-6ad3b15c38127b44c71ba0ea` | est. 830 (charged on completion) | _queued, position 6_ | | | |
 
-| 4 | 2026-10-17 | `aws:rigetti:qpu:cepheus-1-108q` (second team account) | 1 (N = 3) | 19 (18 + marker) | Rigetti native after routing (nearest-neighbour grid adds SWAPs) | 1000 | `aws:rigetti:qpu:cepheus-1-108q-8876-qjob-6ad3b90e38127b44c71ba61e` | est. 72.5 | _initializing_ | | | |
+| 4a | 2026-10-17 14:06 | `aws:rigetti:qpu:cepheus-1-108q` (second team account) | 1 (N = 3) | 19 | — | 1000 | `…-8876-qjob-6ad3b90e38127b44c71ba61e` | **0 (failed)** | FAILED: "Job failed to initialize. The compute backend did not return a job identifier." Never ran. | | | |
+| 4b | 2026-10-17 | same | 1 (N = 3) | 19 | — | 1000 | `…-8876-qjob-6ad3be589a9bc182de9c48f8` | **0 (failed)** | FAILED: "uses a gate: v which is … not supported by the device". qBraid turns Qiskit's `sx` into Braket's `v`, which this Rigetti route rejects. | | | |
+| 4c | 2026-10-17 | same | 1 (N = 3), **`sx` rewritten as `rx(π/2)`** (state verified equal up to global phase; local Aer 739/2000, the same as round 8) | 19 (18 + marker) | 215 in the file sent; Rigetti routing adds SWAPs | 1000 | `aws:rigetti:qpu:cepheus-1-108q-8876-qjob-6ad3bebb9a9bc182de9c48ff` | est. 72.5 | **0 / 937** (63 marker misreads dropped) | 0 | **0.00%** all shots; 0 legal shots to post-select (random post-selected rate 7.41%) | **Fully decohered:** see run 4c below |
 
 Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
 `results/hardware_n3_p1.qasm` (SHA-256 checked before sending).
@@ -103,6 +105,33 @@ Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
 
 <!-- One short entry per run: what we expected, what we measured, the gap, and
 what we changed or concluded because of it. -->
+
+**Run 5 (SV1, N = 4, p = 10, the new main result).** The team asked to
+raise p. Training p = 100 in time was not possible, and fast shortcuts were
+worse: the trained p = 10 angles stretched to p = 100 gave 19–29%, and a
+4-parameter linear ramp at p = 100 gave 0.88%. So the notebook moved to the
+trained p = 10 angles from round 6 (seed 1; they reproduce with angle
+difference 0.0). Expected 55.2% ± 1.6; measured **53.1%** (531/1000),
+within 1.3σ. Job `aws:aws:sim:sv1-d8ed-qjob-6ad3bf029a9bc182de9c490f`,
+**4.27 credits**, 2780 CX, depth 1286. Classical tests still 32 passed.
+
+**Run 4c (Rigetti Cepheus via AWS, N = 3, p = 1, 1000 shots).** Expected:
+weaker than IonQ, because the grid routing adds SWAPs; round 9 did not cover
+it. Measured: **0 of 937 shots legal, 0 solved.** Diagnosis from the raw
+counts (`results/qbraid_rigetti_n3_p1.json`):
+- The marker qubit (one X gate) read 1 in 93.7% of shots, so readout and bit
+  order work.
+- The 18 data bits have a Hamming-weight distribution centred on 9, with
+  999 distinct strings in 1000 shots, which is the signature of uniform
+  random bits. A legal string has weight 3, and a bit-order error would not
+  change the weight, so this is noise, not a decoding bug.
+- Uniform random bits give 6³/2¹⁸ × 937 ≈ 0.8 legal shots expected, so 0
+  is exactly what full decoherence predicts.
+
+Conclusion: on this device, after routing, the 215-CX circuit loses all
+quantum signal. This is the hardware row next to SV1's 37.7% on the same
+file. It is the honest "noise wins" result that rounds 6–7 predicted for
+deep circuits on nearest-neighbour hardware.
 
 **Run 1 (SV1, N = 4, p = 7, the main result).** Sent by running
 `solution.ipynb` top to bottom (7.3 min), so the job ID and result are saved

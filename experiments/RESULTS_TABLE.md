@@ -55,8 +55,10 @@ says otherwise: full mixer (15 pairs per cube) and p = 7.
 | 7 | 3 | p = 4, assumed noise | local Aer + noise model | 18 | 710 | 519 | 2000 | 0.30% (18.8% after keeping one-hot shots, 6/32) | 6.1e-5 | — |
 | 8 | 3 (`make_puzzle(3, 0)`) | Hardware file `hardware_n3_p1.qasm` (p = 1, after `prepare`), loaded back | local Aer | 19 (18 + marker) | 200 (file holds 215) | 135 | 2000 | 36.95% (exact 36.38%) | 6.1e-5 | — |
 | **SV1** | **3** | **Same hardware file, p = 1** | **`aws:aws:sim:sv1`** | **19 (18 + marker)** | **200 (file holds 215)** | **135** | **1000** | **37.70%** (377/1000; all shots one-hot; exact 36.38%) | **6.1e-5** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6`** |
+| **QPU** | **3** | **Same hardware file, p = 1 (`sx` sent as `rx(π/2)`)** | **`aws:rigetti:qpu:cepheus-1-108q`** | **19 (18 + marker)** | **200 (file holds 215; plus routing SWAPs)** | **135** | **1000** | **0.00%** (0 of 937 shots legal; output indistinguishable from uniform random bits) | **6.1e-5** | **`aws:rigetti:qpu:cepheus-1-108q-8876-qjob-6ad3bebb9a9bc182de9c48ff`** |
 | **QPU** | 3 | Same hardware file, p = 1 | `aws:ionq:qpu:forte-enterprise-1` | 19 (18 + marker) | 200 (file holds 215; IonQ recompiles to native gates) | 135 | 100 | _in IonQ queue_ | 6.1e-5 | _pending_ |
-| **SV1** | **4** | **Round-4 circuit (reduced H, Gibbs, p = 7), sent from `solution.ipynb`** | **`aws:aws:sim:sv1`** | **25 (24 + marker)** | **1958** | **907** | **1000** | **36.20%** (362/1000; exact 35.12%) | **1.2e-7** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b20238127b44c71ba11b`** |
+| **SV1** | **4** | **Final circuit: reduced H, Gibbs, p = 10 (saved round-6 angles), sent from `solution.ipynb`** | **`aws:aws:sim:sv1`** | **25 (24 + marker)** | **2780** | **1286** | **1000** | **53.10%** (531/1000; exact 55.19%; local Aer 51.2%) | **1.2e-7** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3bf029a9bc182de9c490f`** |
+| SV1 | 4 | Round-4 circuit (reduced H, Gibbs, p = 7), sent from `solution.ipynb` | **`aws:aws:sim:sv1`** | **25 (24 + marker)** | **1958** | **907** | **1000** | **36.20%** (362/1000; exact 35.12%) | **1.2e-7** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b20238127b44c71ba11b`** |
 
 ### Round 10: Grover (ideal oracle) as a reference curve
 
