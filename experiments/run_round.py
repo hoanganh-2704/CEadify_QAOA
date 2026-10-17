@@ -421,8 +421,57 @@ def round7():
     })
 
 
+# ---------------------------------------------------------------- round 8: freeze the hardware file
+
+QASM_PATH = RESULTS / "hardware_n3_p1.qasm"
+
+
+def round8():
+    import hashlib
+
+    r7 = json.loads((RESULTS / "round7.json").read_text())
+    row7 = next(r for r in r7["rows"] if r["p"] == 1)
+    cubes = S.starter_puzzle(3, r7["puzzle_seed"])
+    file_circuit = S.hardware_circuit(cubes, np.array(row7["angles"]))
+    QASM_PATH.write_text(S.qasm_text(file_circuit))
+    sha = hashlib.sha256(QASM_PATH.read_bytes()).hexdigest()
+    loaded = S.load_qasm(QASM_PATH)
+    _, grading = S.transpile_metrics(loaded, None)
+    table = {"puzzle": f"N=3 make_puzzle(3, {r7['puzzle_seed']})",
+             "encoding": "one-hot 6 per cube + marker", "qubits": loaded.num_qubits,
+             "two_qubit_gates_grading": grading["cx"], "depth_grading": grading["depth"],
+             "random_baseline_post_selected": r7["random_legal"], "job_id": None}
+    t0 = time.perf_counter()
+    noiseless = S.results_row(S.run_loaded(loaded, ROUND7_SHOTS, S.SEED), cubes, marker=True,
+                              device="local Aer, noiseless, loaded QASM", shots=ROUND7_SHOTS,
+                              **table)
+    noiseless["run_s"] = time.perf_counter() - t0
+    noisy = S.results_row(row7["noisy"]["counts"], cubes, marker=False,
+                          device="local Aer, round-7 noise model (saved counts, no marker)",
+                          shots=row7["noisy"]["shots"],
+                          **{**table, "qubits": 18, "encoding": "one-hot 6 per cube",
+                             "two_qubit_gates_grading": row7["cx_grading"],
+                             "depth_grading": row7["depth_grading"]})
+    for r in (noiseless, noisy):
+        print({k: v for k, v in r.items()})
+    save("round8.json", {
+        "qasm_file": str(QASM_PATH.relative_to(HERE.parent)), "qasm_sha256": sha,
+        "built_with": "resources.helpers.prepare (marker qubit 18 = 1, measure_all, "
+                      "transpile optimization_level=1)",
+        "angles": row7["angles"], "exact_p": row7["exact_p"], "qubits": loaded.num_qubits,
+        "cx_in_file": loaded.count_ops().get("cx", 0), "depth_in_file": loaded.depth(),
+        "cx_grading": grading["cx"], "depth_grading": grading["depth"],
+        "round7_cx_grading_p1": row7["cx_grading"], "random_legal": r7["random_legal"],
+        "random_bits_with_marker": r7["answers"] / 2 ** 18,
+        "rows": {"noiseless_loaded_file": noiseless, "round7_noisy_counts": noisy},
+    })
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "7"
+    which = sys.argv[1] if len(sys.argv) > 1 else "8"
+    if which == "8":
+        round8()
+        sys.exit()
     if which == "1":
         round1("--no-aer" not in sys.argv)
     else:

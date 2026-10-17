@@ -1,0 +1,55 @@
+{
+  "qasm_file": "experiments\\results\\hardware_n3_p1.qasm",
+  "qasm_sha256": "a666efe3ffc5203ba06ef75fd910b7e497f3722e2bd84b30e5d6cb9d64ce515e",
+  "built_with": "resources.helpers.prepare (marker qubit 18 = 1, measure_all, transpile optimization_level=1)",
+  "angles": [
+    2.6651790987788315,
+    0.15965620945367698
+  ],
+  "exact_p": 0.3638307619146006,
+  "qubits": 19,
+  "cx_in_file": 215,
+  "depth_in_file": 137,
+  "cx_grading": 200,
+  "depth_grading": 135,
+  "round7_cx_grading_p1": 200,
+  "random_legal": 0.07407407407407407,
+  "random_bits_with_marker": 6.103515625e-05,
+  "rows": {
+    "noiseless_loaded_file": {
+      "device": "local Aer, noiseless, loaded QASM",
+      "shots": 2000,
+      "puzzle": "N=3 make_puzzle(3, 0)",
+      "encoding": "one-hot 6 per cube + marker",
+      "qubits": 19,
+      "two_qubit_gates_grading": 200,
+      "depth_grading": 135,
+      "random_baseline_post_selected": 0.07407407407407407,
+      "job_id": null,
+      "total": 2000,
+      "kept": 2000,
+      "solved": 739,
+      "marker_dropped": 0,
+      "p_all": 0.3695,
+      "p_post_selected": 0.3695,
+      "run_s": 0.08690600001136772
+    },
+    "round7_noisy_counts": {
+      "device": "local Aer, round-7 noise model (saved counts, no marker)",
+      "shots": 2000,
+      "puzzle": "N=3 make_puzzle(3, 0)",
+      "encoding": "one-hot 6 per cube",
+      "qubits": 18,
+      "two_qubit_gates_grading": 200,
+      "depth_grading": 161,
+      "random_baseline_post_selected": 0.07407407407407407,
+      "job_id": null,
+      "total": 2000,
+      "kept": 349,
+      "solved": 95,
+      "marker_dropped": 0,
+      "p_all": 0.0475,
+      "p_post_selected": 0.2722063037249284
+    }
+  }
+}

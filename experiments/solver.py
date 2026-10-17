@@ -537,7 +537,9 @@ def qasm_text(circuit):
 def load_qasm(path):
     from qiskit import qasm2
 
-    return qasm2.loads(Path(path).read_text())
+    # qelib1.inc has no sx; the legacy list teaches the parser the gates dumps() writes.
+    return qasm2.loads(Path(path).read_text(),
+                       custom_instructions=qasm2.LEGACY_CUSTOM_INSTRUCTIONS)
 
 
 def run_loaded(circuit, shots=2000, seed=SEED, model=None):
@@ -546,16 +548,24 @@ def run_loaded(circuit, shots=2000, seed=SEED, model=None):
     return sim.run(circuit, shots=shots).result().get_counts()
 
 
+MARKER_MIN = 0.9   # the marker end must read 1 in at least this fraction of shots
+
+
 def split_marker(raw):
     """Like helpers.strip_marker, but a shot whose marker reads 0 (readout noise) is dropped
-    and counted instead of raising. The end holding more marker-1 shots is the marker end."""
-    left = sum(n for k, n in raw.items() if k[0] == "1")
-    right = sum(n for k, n in raw.items() if k[-1] == "1")
-    if left >= right:
+    and counted instead of raising. The marker end is the end that reads 1 in at least
+    MARKER_MIN of the shots; if both ends (or neither) do, qubit 0 could be mistaken for the
+    marker, so this raises instead of guessing."""
+    total = sum(raw.values())
+    left = sum(n for k, n in raw.items() if k[0] == "1") / total
+    right = sum(n for k, n in raw.items() if k[-1] == "1") / total
+    if left >= MARKER_MIN > right:
         kept = {k[1:]: n for k, n in raw.items() if k[0] == "1"}
-    else:
+    elif right >= MARKER_MIN > left:
         kept = {k[:-1][::-1]: n for k, n in raw.items() if k[-1] == "1"}
-    return kept, sum(raw.values()) - sum(kept.values())
+    else:
+        raise ValueError(f"marker end is ambiguous (left {left:.2f}, right {right:.2f})")
+    return kept, total - sum(kept.values())
 
 
 def results_row(counts, cubes, marker=False, **table):

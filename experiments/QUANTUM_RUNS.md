@@ -40,7 +40,7 @@ apart from random. The 3-cube puzzle can:
 | Candidate job | Credits | Expected one-hot shots kept | Expected solved | Random would give | Chance random does this well |
 |---|---|---|---|---|---|
 | **N = 3 `make_puzzle(3, 0)`, p = 1, 200 shots** (teacher's recommendation) | 1630 (≈ $16.30) | ≈ 35 | ≈ 10 | ≈ 2.6 | ≈ 2 × 10⁻⁴ |
-| N = 3, p = 1, 100 shots | 830 (≈ $8.30) | ≈ 17 | ≈ 5 | ≈ 1.3 | ≈ 7 × 10⁻³ |
+| **N = 3, p = 1, 100 shots (chosen)** | 830 (≈ $8.30) | ≈ 17 | ≈ 5 | ≈ 1.3 | ≈ 7 × 10⁻³ |
 | N = 4, p = 1, 100 shots | 830 | — | ≈ 0.5 | ≈ 0.5 | indistinguishable |
 
 These are predictions from an assumed noise model, not measurements. IonQ's
@@ -56,8 +56,8 @@ N = 3, p = 1 circuit should also run on SV1, which is cheap.
 | Order | Device | Pricing (from qBraid, read-only query) | Status |
 |---|---|---|---|
 | 1a | `aws:aws:sim:sv1`: N = 4, p = 7, 1000 shots (main result) | 7.5 credits/min; queue 0 | Approved by the team; waiting on `submit_job` |
-| 1b | `aws:aws:sim:sv1`: N = 3 `make_puzzle(3, 0)`, p = 1 (the SV1 row to sit next to the IonQ row) | same | Proposed; needs the team's OK |
-| 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity): N = 3, p = 1, 100 or 200 shots | 30 credits/task + 8 credits/shot (100 shots = 830 ≈ $8.30; 200 shots = 1630 ≈ $16.30); queue 5 | Device chosen by the team; shot count needs the team's explicit OK |
+| 1b | `aws:aws:sim:sv1`: N = 3 `make_puzzle(3, 0)`, p = 1, 1000 shots (the SV1 row to sit next to the IonQ row) | same | Approved by the team ("run it both in SV1 and then the QPU"); waiting on `submit_job` |
+| 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity): N = 3, p = 1, the round-8 verified circuit, **100 shots** | 30 + 8 × 100 = **830 credits (≈ $8.30)**; queue 5 | **Approved by the team: 100 shots.** Runs after the SV1 jobs succeed; waiting on `submit_job` |
 | — | `rigetti:rigetti:qpu:cepheus-1-108q` | 12,000 credits/min (≈ $120/min) | Considered and set aside: time-billed, and its nearest-neighbour wiring adds SWAPs |
 
 ## Run log

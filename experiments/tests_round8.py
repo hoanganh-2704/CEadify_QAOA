@@ -97,17 +97,28 @@ def test_grading_cx_equals_round7_p1(loaded, round7):
 # ---------------------------------------------------------------- 3. bit order
 
 def test_hand_made_counts_decode_with_qiskit_order(cubes):
-    solved, unsolved = solved_and_unsolved(cubes)
-    counts = {key(solved): 5, key(unsolved): 3, "1" + "1" * 18: 2}
+    solved = solved_with_qubit0_off(cubes)
+    unsolved = next(tuple(int(i) for i in idx) for idx in np.argwhere(~S.solved_mask(cubes))
+                    if idx[0] != 0)
+    counts = {key(solved): 5, key(unsolved): 3, "1" + "0" * 18: 2}   # last: marker only
     row = S.results_row(counts, cubes, marker=True)
     assert (row["solved"], row["kept"], row["total"]) == (5, 8, 10)
 
 
+def solved_with_qubit0_off(cubes):
+    """A solved pick whose cube 0 is not choice 0, so qubit 0 reads 0 and cannot pose
+    as the marker."""
+    return next(tuple(int(i) for i in idx) for idx in np.argwhere(S.solved_mask(cubes))
+                if idx[0] != 0)
+
+
 def test_reversed_keys_are_restored_by_the_marker_or_not_counted(cubes):
     solved, _ = solved_and_unsolved(cubes)
-    # Whole key reversed (a provider listing qubit 0 first): the marker shows it, so it is undone.
-    flipped = S.results_row({key(solved)[::-1]: 4}, cubes, marker=True)
-    assert flipped["solved"] == 4
+    clean = solved_with_qubit0_off(cubes)
+    # Whole key reversed (a provider listing qubit 0 first): only the marker end is always 1,
+    # so the reversal is detected and undone.
+    flipped = S.results_row({key(solved)[::-1]: 4, key(clean)[::-1]: 6}, cubes, marker=True)
+    assert flipped["solved"] == 10
     # Body reversed without a marker to reveal it: the solved pick must not count as solved.
     body = key(solved, marker=False)
     assert body[::-1] != body
@@ -116,10 +127,17 @@ def test_reversed_keys_are_restored_by_the_marker_or_not_counted(cubes):
 
 
 def test_marker_read_as_zero_is_dropped_not_fatal(cubes):
-    solved, _ = solved_and_unsolved(cubes)
-    counts = {key(solved): 9, "0" + key(solved)[1:]: 1}     # one readout flip on the marker
+    clean = solved_with_qubit0_off(cubes)
+    counts = {key(clean): 9, "0" + key(clean)[1:]: 1}       # one readout flip on the marker
     row = S.results_row(counts, cubes, marker=True)
     assert row["marker_dropped"] == 1 and row["total"] == 9 and row["solved"] == 9
+
+
+def test_ambiguous_marker_end_raises_instead_of_guessing(cubes):
+    solved, _ = solved_and_unsolved(cubes)          # cube 0 is choice 0: qubit 0 reads 1
+    assert key(solved)[0] == "1" and key(solved)[-1] == "1"
+    with pytest.raises(ValueError):
+        S.results_row({key(solved): 4}, cubes, marker=True)
 
 
 # ---------------------------------------------------------------- 4. pipeline on simulated counts
