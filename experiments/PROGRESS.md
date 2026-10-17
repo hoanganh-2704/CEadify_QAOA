@@ -60,6 +60,13 @@ Gibbs) if time allows.
 
 ## Round 2
 
+> **Status: provisional.** This round bundled three changes (Hamiltonian
+> reduction, mixer study, objective study) in one run and retrained the
+> angles it called "round-1 angles." Under the protocol in `PROTOCOL.md`
+> (adopted after this round) it is being redone one change at a time,
+> starting with the reduced Hamiltonian only. Treat the numbers below as
+> leads, not accepted results, until each change passes its own review.
+
 **Student did:**
 1. **Reduced Hamiltonian.** Rebuilt H from the cost tensor using the one-hot
    identities, then picked the reference choice ("gauge") per cube that
