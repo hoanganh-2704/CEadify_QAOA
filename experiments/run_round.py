@@ -164,9 +164,55 @@ def round2():
     })
 
 
+# ---------------------------------------------------------------- round 3: full vs ring mixer only
+
+MIXER_SEEDS = (0, 1, 2, 3, 4)
+JITTER = 0.05
+ROUND3_GAUGE = "best"
+
+
+def mixer_runs(costs, solved, pairs):
+    """Average-cost layer-by-layer training to p=7 for each jitter seed."""
+    start = S.grid_p1(costs, solved, pairs=pairs)
+    runs = []
+    for seed in MIXER_SEEDS:
+        t0 = time.perf_counter()
+        angles, curve = S.train_layerwise(costs, solved, P_MAX, pairs, S.objective_average,
+                                          jitter_seed=seed, jitter=JITTER, start=start)
+        runs.append({"seed": seed, "p_solved": curve[-1][2], "avg_cost": curve[-1][1],
+                     "train_s": time.perf_counter() - t0, "angles": angles.tolist()})
+        print(f"    seed {seed}: P(solved) {curve[-1][2]:.4%}  <C> {curve[-1][1]:.4f}")
+    return start, runs
+
+
+def round3():
+    costs, solved = problem()
+    H = S.reduced_hamiltonian(S.CUBES, ROUND3_GAUGE)
+    mixers = {}
+    for name, pairs in S.MIXERS.items():
+        print(f"mixer {name} ({len(pairs)} pairs per cube)")
+        start, runs = mixer_runs(costs, solved, pairs)
+        ps = [r["p_solved"] for r in runs]
+        median_run = sorted(runs, key=lambda r: r["p_solved"])[len(runs) // 2]
+        angles = np.array(median_run["angles"])
+        circuit = S.tower_qaoa(S.CUBES, H, angles[:P_MAX], angles[P_MAX:], pairs)
+        mixers[name] = {"pairs_per_cube": len(pairs), "grid_start": list(start), "runs": runs,
+                        "median": float(np.median(ps)), "min": min(ps), "max": max(ps),
+                        "circuit_angles_seed": median_run["seed"],
+                        **grading_metrics(circuit)[1]}
+        print(f"  {name}: median {np.median(ps):.4%}  min {min(ps):.4%}  max {max(ps):.4%}  "
+              f"CX {mixers[name]['cx_grading']}  depth {mixers[name]['depth_grading']}")
+    save("round3.json", {"objective": "average", "hamiltonian": f"reduced_{ROUND3_GAUGE}",
+                         "jitter": JITTER, "p": P_MAX, "seeds": list(MIXER_SEEDS),
+                         "transpile_call": 'transpile(qc, basis_gates=["rz","sx","x","cx"])',
+                         "mixers": mixers})
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "2"
+    which = sys.argv[1] if len(sys.argv) > 1 else "3"
     if which == "1":
         round1("--no-aer" not in sys.argv)
-    else:
+    elif which == "2":
         round2()
+    else:
+        round3()

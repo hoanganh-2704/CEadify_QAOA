@@ -17,12 +17,22 @@ random 24-bit string 2/2²⁴ ≈ 1.2 × 10⁻⁷.
 | Round | Variant | Exact P(solved) | Aer 1000 shots | Qubits | CX | Depth | Transpile |
 |---|---|---|---|---|---|---|---|
 | 0 | Team notebook (`solution.ipynb`) | 26.35% | 25.5% | 24 | 4610 | 1503 | opt 1 |
-| 1 | Student harness reproduces round 0 | 26.35% | 25.5% | 24 | 4610 | 1503 | opt 1 |
-| 1 | Same circuit, GRADING transpile call | 26.35% | 25.5% | 24 | 4590 | 1683 | GRADING |
-| 2 | Reduced Hamiltonian (best gauge), round-1 angles | 26.35% | 25.5% | 24 | 1958 | 908 | GRADING |
+| 1 | Student harness, saved `round1.json` angles | 26.246% | 25.3% | 24 | 4610 | 1503 | opt 1 |
+| 1 | Same circuit, GRADING transpile call | 26.246% | 25.3% | 24 | 4590 | 1684 | GRADING |
+| 2 ✅ | Reduced H, reference 0, same saved angles (invariant passed) | 26.246% | — | 24 | 2196 | 974 | GRADING |
+| 2 ✅ | Reduced H, per-pair reference, same saved angles (invariant passed) | 26.246% | — | 24 | 1958 | 911 | GRADING |
 | 2 | Ring mixer (6 pairs), avg cost, 5 seeds | 7.67% median | 7.0% | 24 | 1454 | 760 | GRADING — rejected |
 | 2 | CVaR(0.1) objective, 3 seeds | 10.04% median | 10.2% | 24 | 1958 | 908 | GRADING — rejected |
 | **2** | **Gibbs objective (η=1) + full mixer + reduced H, 3 seeds** | **35.12% median** | **34.3%** | **24** | **1958** | **920** | **GRADING** |
+
+**Baseline correction.** Earlier versions of this file gave 26.35% / 25.5%
+for round 1. Those came from a student run whose angles were overwritten
+before `round1.json` was committed. The committed `round1.json` gives
+**26.246% exact and 253/1000 = 25.3% Aer**, and that is the round-1
+baseline used from now on. The team notebook (round 0) keeps its own
+26.35% / 25.5%, which come from different angles. ✅ marks rows the teacher
+has verified under `PROTOCOL.md`. Rows marked "rejected" or labelled with
+seed medians come from the provisional bundled round 2.
 
 From round 2 on, the official CX/depth use the GRADING call
 `transpile(qc, basis_gates=["rz","sx","x","cx"])` so every team counts the
@@ -103,6 +113,37 @@ was not tuned; the GRADING call gives deeper circuits than opt 1 (920 vs
 - The teacher also removed the CX-budget and exact-term-count asserts from
   `tests_quantum.py`, because rule 1 makes CX a measurement, not a target.
 - The mixer and objective studies were not reviewed and remain leads.
+
+**Student's redo (one change only):** loaded the angles from `round1.json`
+instead of retraining (a fresh training drifts 1.96 × 10⁻³ and is stored
+only as a drift figure). Both reduced gauges: energy equals cost on all 1,296
+picks; overlap with the old state is 1 (N = 4 subspace and N = 2 circuits);
+P(solved) 26.246% for old and new. Only after that passed: CX 4590 → 2196
+(reference 0) and → 1958 (per-pair reference); depth 1684 → 974 / 911.
+No Aer run this round. The runner no longer contains the mixer or objective
+studies, the automatic ring decision, or the pasted shot rate.
+
+**Teacher's re-review: still not yet.** The teacher re-ran the tests (66
+passed, test files unedited) and confirmed the invariant. Sentence 2 of
+`results/round2_note.md` makes a wrong physics claim about same-cube ZZ
+terms. Sentences 1, 3 and 4 are accepted. The student has to find and fix
+the error itself; no new study until it does.
+
+**Student's fix:** evaluated Z_iZ_j for every qubit pair of a block on all
+6 one-hot states and found it takes both values. The fixed quantity is
+x_i·x_j = 0, so on reachable states Z_iZ_j = Z_i + Z_j − 1. Rewrote
+sentence 2 in its own words.
+
+**✅ Round 2 accepted.** The teacher re-ran the tests (66 passed), confirmed
+a one-line note diff, brute-force checked the identity, and accepted all
+four sentences. Accepted result: **same success rate (26.246%) with CX
+4590 → 1958 (−57%) and depth 1684 → 911 (−46%)**.
+
+**Assignment for round 3:** full vs ring XY mixer only. Same average-cost
+objective, p = 7, same reduced H and COBYLA settings, start-angle jitter
+N(0, 0.05), seeds 0–4 for both. Report each run plus median/min/max and
+GRADING CX/depth in `round3.json`; pick no winner; write `round3_note.md`.
+Red test: `experiments/tests_round3_review.py`.
 
 **What we learned (provisional):** the training objective mattered more than the mixer
 shape. Fewer two-qubit gates came from removing terms that are constant on
