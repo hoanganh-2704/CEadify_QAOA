@@ -115,6 +115,16 @@ difference 0.0). Expected 55.2% ± 1.6; measured **53.1%** (531/1000),
 within 1.3σ. Job `aws:aws:sim:sv1-d8ed-qjob-6ad3bf029a9bc182de9c490f`,
 **4.27 credits**, 2780 CX, depth 1286. Classical tests still 32 passed.
 
+**Run 6 (Rigetti Cepheus via AWS, N = 4, p = 10, 1000 shots; requested by
+the team).** Job `aws:rigetti:qpu:cepheus-1-108q-8876-qjob-6ad3bfec05caa57146848b50`
+FAILED during translation, **cost 0**: "The total number of gates in the
+circuit is higher than 20,000. It is currently 74,139." Our 2800-CX file
+grows about 26× in total gates once compiled to Rigetti's native gates and
+routed on its nearest-neighbour grid. Roughly 7,400 native gates per QAOA
+layer means only about p ≤ 2 fits under the 20,000-gate limit, and run 4c
+already showed that p = 1 on this device is pure noise. Device limits, not
+only noise, cap circuit depth on today's hardware.
+
 **Run 4c (Rigetti Cepheus via AWS, N = 3, p = 1, 1000 shots).** Expected:
 weaker than IonQ, because the grid routing adds SWAPs; round 9 did not cover
 it. Measured: **0 of 937 shots legal, 0 solved.** Diagnosis from the raw
