@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit.library import XXPlusYYGate
-from qiskit.quantum_info import SparsePauliOp
+from qiskit.quantum_info import Operator, SparsePauliOp
 from qiskit_aer import AerSimulator
 from scipy.optimize import minimize
 
@@ -126,7 +126,19 @@ def energy(H, bits):
 
 def xy_one_hot(beta):
     """The per-cube XY mixer (XXPlusYY(2 beta) on all 15 pairs, in MIX_PAIRS order)
-    restricted to the 6 one-hot states. Each gate is a 2x2 rotation
+    restricted to the 6 one-hot states, read off Qiskit's own gate matrices.
+    Same construction as the notebook, so COBYLA follows the identical path
+    (the closed form below differs by ~1e-16, which shifts COBYLA's result)."""
+    qc = QuantumCircuit(6)
+    for i, j in MIX_PAIRS:
+        qc.append(XXPlusYYGate(2 * beta), [i, j])
+    keep = [1 << k for k in range(6)]
+    return Operator(qc).data[np.ix_(keep, keep)]
+
+
+def xy_one_hot_fast(beta):
+    """The per-cube XY mixer (XXPlusYY(2 beta) on all 15 pairs, in MIX_PAIRS order)
+    restricted to the 6 one-hot states, closed form. Each gate is a 2x2 rotation
     [[cos b, -i sin b], [-i sin b, cos b]] on the states |k=i> and |k=j>."""
     c, s = np.cos(beta), np.sin(beta)
     U = np.eye(6, dtype=complex)

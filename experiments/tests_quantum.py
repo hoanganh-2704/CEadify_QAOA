@@ -66,6 +66,7 @@ def test_closed_form_mixer_matches_qiskit_gates(beta):
     keep = [1 << k for k in range(6)]
     restricted = Operator(qc).data[np.ix_(keep, keep)]
     assert np.allclose(restricted, S.xy_one_hot(beta), atol=TOL)
+    assert np.allclose(restricted, S.xy_one_hot_fast(beta), atol=TOL)
 
 
 def test_decoder_uses_qiskit_bit_order():
