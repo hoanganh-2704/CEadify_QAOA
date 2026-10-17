@@ -482,6 +482,40 @@ def aer_exact_p_solved(compiled, mask):
     return float(probs[mask].sum()), outside
 
 
+CX_ERROR, ONE_QUBIT_ERROR, READOUT_ERROR = 1e-2, 5e-4, 0.02
+
+
+def noise_model(cx_error=CX_ERROR, one_qubit_error=ONE_QUBIT_ERROR, readout=READOUT_ERROR):
+    """Stated assumptions, not a device: depolarizing on cx and on sx/x, none on rz
+    (a virtual frame change), symmetric readout flips on every qubit."""
+    from qiskit_aer.noise import NoiseModel, ReadoutError, depolarizing_error
+
+    model = NoiseModel(basis_gates=BASIS)
+    model.add_all_qubit_quantum_error(depolarizing_error(cx_error, 2), ["cx"])
+    model.add_all_qubit_quantum_error(depolarizing_error(one_qubit_error, 1), ["sx", "x"])
+    model.add_all_qubit_readout_error(
+        ReadoutError([[1 - readout, readout], [readout, 1 - readout]]))
+    return model
+
+
+def noisy_counts(compiled, model=None, shots=2000, seed=SEED):
+    """Counts from the transpiled circuit, with or without a noise model."""
+    qc = compiled.copy()
+    qc.measure_all()
+    sim = AerSimulator(method="statevector", seed_simulator=seed, noise_model=model)
+    return sim.run(qc, shots=shots).result().get_counts()
+
+
+def rates_from_counts(counts, cubes):
+    """All shot rates from raw counts. Solved shots are checked with solves();
+    post-selection keeps exactly the shots that decode as one-hot."""
+    m = shot_metrics(counts, cubes)
+    return {"shots": m["shots"], "one_hot": m["valid"], "solved": m["solved"],
+            "post_selected_shots": m["valid"], "p_solved": m["solved"] / m["shots"],
+            "one_hot_fraction": m["valid"] / m["shots"],
+            "p_post_selected": m["solved"] / m["valid"] if m["valid"] else 0.0}
+
+
 def shot_metrics(counts, cubes):
     """Valid (one-hot) and solved shot counts, each solved tower checked with solves()."""
     shots = sum(counts.values())

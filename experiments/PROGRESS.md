@@ -129,6 +129,20 @@ Report: seeds 0–2, exact P median/min/max, GRADING CX/depth, baselines,
 brute-force and training time. No Aer at 30 qubits (the statevector needs
 about 16 GB), no tuning, no speedup claim.
 
+## Round 7: local noise study (running)
+
+**Teacher's question:** on `make_puzzle(3, s)` (18 qubits), at which p
+(1, 2, 3, 4, 6) does the accepted recipe stop beating random under assumed
+noise? Does keeping only one-hot shots help?
+
+**Assumed noise** (an assumption, not a device calibration): depolarizing
+1% on `cx`, 0.05% on `sx`/`x`, 2% readout error, no routing (optimistic).
+Jitter seed 0, 2000 shots, simulator seed 7.
+
+**Test written first:** with noise off, Aer matches exact P within 3σ and
+every shot is one-hot; with noise on, the post-selected count equals the
+one-hot shots, and every rate recomputes from the saved counts.
+
 ## Scoreboard
 
 | Round | Variant | Exact P(solved) | Aer 1000 shots | Qubits | CX | Depth | Transpile |

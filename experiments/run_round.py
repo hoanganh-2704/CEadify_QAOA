@@ -364,9 +364,66 @@ def round6():
     })
 
 
+# ---------------------------------------------------------------- round 7: local noise study (N = 3)
+
+ROUND7_P = (1, 2, 3, 4)          # p = 6 dropped: one noisy 2000-shot run at p = 6 took 355 s
+ROUND7_DROPPED = (6,)
+ROUND7_SHOTS = 2000
+
+
+def smallest_seed_with_answer(n, limit=100):
+    count = S.load_starter()["count_answers"]
+    for seed in range(limit):
+        answers = count(S.starter_puzzle(n, seed))
+        if answers:
+            return seed, answers
+    raise RuntimeError("no seed with an answer")
+
+
+def round7():
+    s, answers = smallest_seed_with_answer(3)
+    cubes = S.starter_puzzle(3, s)
+    costs, solved = S.cost_tensor(cubes), S.solved_mask(cubes)
+    assert int(solved.sum()) == answers and np.array_equal(solved, np.isclose(costs, 0))
+    pairs, model = S.MIXERS["full"], S.noise_model()
+    H = S.reduced_hamiltonian(cubes, ROUND3_GAUGE)
+    layers = S.train_layers(costs, solved, max(ROUND7_P), pairs, S.OBJECTIVES[ROUND4_OBJECTIVE],
+                            jitter_seed=0, jitter=JITTER)
+    rows = []
+    for p, angles, _, exact in layers:
+        if p not in ROUND7_P:
+            continue
+        compiled, metrics = grading_metrics(S.tower_qaoa(cubes, H, angles[:p], angles[p:], pairs))
+        row = {"p": p, "angles": angles.tolist(), "exact_p": exact, **metrics,
+               "exact_times_fidelity": exact * (1 - S.CX_ERROR) ** metrics["cx_grading"]}
+        for kind, noise in (("noiseless", None), ("noisy", model)):
+            t0 = time.perf_counter()
+            counts = S.noisy_counts(compiled, noise, ROUND7_SHOTS, S.SEED)
+            row[kind] = {**S.rates_from_counts(counts, cubes),
+                         "run_s": time.perf_counter() - t0, "counts": counts}
+        rows.append(row)
+        print(f"p={p} exact {exact:.2%}  noiseless {row['noiseless']['p_solved']:.2%}  "
+              f"noisy {row['noisy']['p_solved']:.2%}  one-hot {row['noisy']['one_hot_fraction']:.1%}"
+              f"  post-sel {row['noisy']['p_post_selected']:.2%}  "
+              f"P*0.99^CX {row['exact_times_fidelity']:.2%}  CX {metrics['cx_grading']}  "
+              f"depth {metrics['depth_grading']}  noisy {row['noisy']['run_s']:.0f}s")
+    base = S.random_baselines(solved)
+    save("round7.json", {
+        "n": 3, "puzzle_seed": s, "answers": answers, "cubes": cubes,
+        "objective": ROUND4_OBJECTIVE, "mixer": "full", "hamiltonian": f"reduced_{ROUND3_GAUGE}",
+        "jitter_seed": 0, "jitter": JITTER, "p_values": list(ROUND7_P),
+        "dropped_p": list(ROUND7_DROPPED), "shots": ROUND7_SHOTS, "seed_simulator": S.SEED,
+        "noise": {"cx_depolarizing": S.CX_ERROR, "sx_x_depolarizing": S.ONE_QUBIT_ERROR,
+                  "rz": 0.0, "readout_flip": S.READOUT_ERROR, "routing": "none (no coupling map)"},
+        "random_legal": base["random_legal"], "random_bits": base["random_bits"],
+        "random_after_one_hot_postselection": base["random_legal"],
+        "transpile_call": 'transpile(qc, basis_gates=["rz","sx","x","cx"])', "rows": rows,
+    })
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "6"
+    which = sys.argv[1] if len(sys.argv) > 1 else "7"
     if which == "1":
         round1("--no-aer" not in sys.argv)
     else:
-        {"2": round2, "3": round3, "4": round4, "5": round5, "6": round6}[which]()
+        {"2": round2, "3": round3, "4": round4, "5": round5, "6": round6, "7": round7}[which]()
