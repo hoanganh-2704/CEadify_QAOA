@@ -173,7 +173,14 @@ first. Expected about 35 kept and 10 solved vs 2.6 by chance (see
   that produced the round-7 numbers, and does the counts → decode →
   keep-one-hot → `solves()` pipeline read results correctly, including bit
   order?
-- **Round 9 (running):** for the submitted 215-CX file, what kept and
+- **Round 9 ✅ accepted.** 100 IonQ shots should give about 18–51 kept and
+  5–17 solved (random: 1.3–3.8), depending on the chip's noise. Teacher's
+  power estimate (the chance the real run gives p < 0.05): about 1.00 /
+  0.94 / 0.78 / 0.71 from the best to the worst assumed noise. The student
+  edited its test after the red run (2000 → at least 1000 shots, with its
+  3σ tolerance scaled to match). The teacher judged it not weakened but
+  asked that scope changes go in the note first next time. Original
+  question: for the submitted 215-CX file, what kept and
   solved counts should 100 IonQ shots give for `cx` error 0.3/0.5/1% ×
   readout 0.5/2%? Report 95% intervals and p-values against 7.41%. The test
   checks the file hash, that the noise-off run matches exact, and that every

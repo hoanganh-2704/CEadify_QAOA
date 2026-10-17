@@ -516,6 +516,26 @@ def rates_from_counts(counts, cubes):
             "p_post_selected": m["solved"] / m["valid"] if m["valid"] else 0.0}
 
 
+# ---------------------------------------------------------------- Grover on the legal subspace
+
+def grover_oracle_mask(cubes):
+    """Picks the ideal oracle phase-flips: exactly the cost-0 picks (built from the cost)."""
+    return np.isclose(cost_tensor(cubes), 0)
+
+
+def grover_curve(mask, k_max):
+    """Exact P(solved) after k = 0..k_max iterations. A is the W-product state, which is
+    the uniform state on the legal picks; one iteration = oracle, then 2|A><A| - I."""
+    a = np.full(mask.shape, 1 / np.sqrt(mask.size))
+    psi = a.copy()
+    curve = [float(np.sum(np.abs(psi[mask]) ** 2))]
+    for _ in range(k_max):
+        psi = np.where(mask, -psi, psi)
+        psi = 2 * a * np.vdot(a, psi) - psi
+        curve.append(float(np.sum(np.abs(psi[mask]) ** 2)))
+    return curve
+
+
 # ---------------------------------------------------------------- hardware file and readout
 
 def hardware_circuit(cubes, angles, gauge="best"):

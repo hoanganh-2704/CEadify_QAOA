@@ -515,8 +515,43 @@ def round9():
         "rows": rows})
 
 
+# ---------------------------------------------------------------- round 10: Grover vs QAOA (part a)
+
+def grover_block(cubes):
+    mask = S.grover_oracle_mask(cubes)
+    m, d = int(mask.sum()), mask.size
+    theta = float(np.arcsin(np.sqrt(m / d)))
+    k_peak = int(round(np.pi / (4 * theta) - 0.5))
+    curve = S.grover_curve(mask, k_peak + 3)          # a little past the first peak
+    best = int(np.argmax(curve))
+    return {"M": m, "legal_picks": d, "theta": theta, "random_legal": m / d,
+            "p_solved": curve, "best_k": best, "oracle_calls_at_best": best,
+            "p_best": curve[best]}
+
+
+def round10():
+    grover = {"3": grover_block(S.starter_puzzle(3, 0)), "4": grover_block(S.CUBES)}
+    r6 = json.loads((RESULTS / "round6.json").read_text())["per_p"]
+    r7 = json.loads((RESULTS / "round7.json").read_text())["rows"]
+    qaoa = {"3": {str(r["p"]): {"p_solved": r["exact_p"], "cx_grading": r["cx_grading"]}
+                  for r in r7},
+            "4": {p: {"p_solved": b["median"], "cx_grading": b["cx_grading"]}
+                  for p, b in r6.items()}}
+    for n, g in grover.items():
+        print(f"N={n}: M={g['M']}/{g['legal_picks']}  best k={g['best_k']} "
+              f"P={g['p_best']:.4%}  curve " + " ".join(f"{p:.3f}" for p in g["p_solved"]))
+    save("round10.json", {
+        "grover": grover, "qaoa": qaoa, "part_b": "skipped",
+        "note": "best k is chosen with the answer count M, which QAOA never uses",
+        "qaoa_sources": {"3": "round7.json rows (exact_p, jitter seed 0)",
+                         "4": "round6.json per_p (median of seeds 0-2)"}})
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "9"
+    which = sys.argv[1] if len(sys.argv) > 1 else "10"
+    if which == "10":
+        round10()
+        sys.exit()
     if which == "9":
         round9()
         sys.exit()

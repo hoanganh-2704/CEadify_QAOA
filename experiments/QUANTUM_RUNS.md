@@ -51,6 +51,30 @@ a random legal pick of 3 cubes solves 16/216 of the time.
 To follow GRADING.md ("add a row for it next to the matching SV1 row"), the
 N = 3, p = 1 circuit should also run on SV1, which is cheap.
 
+### Refined prediction for the submitted 215-CX file (round 9, 100 shots)
+
+Simulated with 1000 shots per cell and scaled to 100; 95% intervals. The
+1-qubit error is 0.05% throughout.
+
+| CX error | Readout error | Expected kept | Expected solved | p-value vs 7.41% |
+|---|---|---|---|---|
+| 0 | 0 | 100 [100, 100] | 36.8 [27, 46] | 4.6 × 10⁻¹⁷ |
+| 0.3% | 0.5% | 50.9 [41, 61] | 17.2 [10, 25] | 7.7 × 10⁻⁸ |
+| 0.3% | 2% | 39.3 [30, 49] | 12.5 [6, 19] | 1.6 × 10⁻⁵ |
+| 0.5% | 0.5% | 39.3 [30, 49] | 13.0 [7, 20] | 2.6 × 10⁻⁶ |
+| 0.5% | 2% | 30.3 [22, 39] | 9.3 [4, 15] | 2.3 × 10⁻⁴ |
+| 1% | 0.5% | 22.3 [14, 31] | 6.1 [2, 11] | 4.4 × 10⁻³ |
+| 1% | 2% | 18.0 [11, 26] | 5.0 [1, 10] | 8.4 × 10⁻³ |
+
+**Power** (teacher's round-9 review): the chance a 100-shot run reaches
+p < 0.05 against 7.41% is about 1.00 / 0.94 / 0.78 / 0.71 from the best to
+the worst assumed noise.
+
+How to read the real result: find the row whose kept/solved range contains
+the IonQ counts; that brackets the chip's effective noise. At the noisiest
+settings, the low ends of the intervals do not beat random, so an unlucky
+run could be inconclusive.
+
 ## Planned jobs
 
 | Order | Device | Pricing (from qBraid, read-only query) | Status |
