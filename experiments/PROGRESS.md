@@ -88,6 +88,22 @@ angles were only jittered slightly, so other optima weren't explored; η
 was not tuned; the GRADING call gives deeper circuits than opt 1 (920 vs
 733).
 
-**What we learned:** the training objective mattered more than the mixer
+**Teacher's review under the new protocol** (`results/round2_review.md`):
+**not yet.**
+- Passed: the reduced Hamiltonian (both gauges) matches `cost_tensor` on
+  all 1,296 legal picks, and at the saved round-1 angles its legal-subspace
+  state matches round 1 to 1e-9 (N = 4; the N = 2 Qiskit circuits match
+  too).
+- Failed: `round2.json` used retrained angles, which differ from
+  `round1.json` by up to 1.96 × 10⁻³, instead of loading them. The
+  student's four-sentence note is missing.
+- Red tests (`experiments/tests_round2_review.py`):
+  `test_round2_results_used_the_saved_round1_angles`,
+  `test_round2_note_explains_the_round`. Teacher's run: 2 failed, 64 passed.
+- The teacher also removed the CX-budget and exact-term-count asserts from
+  `tests_quantum.py`, because rule 1 makes CX a measurement, not a target.
+- The mixer and objective studies were not reviewed and remain leads.
+
+**What we learned (provisional):** the training objective mattered more than the mixer
 shape. Fewer two-qubit gates came from removing terms that are constant on
 the legal states, not from a sparser mixer.
