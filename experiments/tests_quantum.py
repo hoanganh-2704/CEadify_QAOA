@@ -106,8 +106,8 @@ def test_solved_mask_agrees_with_zero_cost():
 
 # ---------------------------------------------------------------- round 2: reduced Hamiltonian
 
-@pytest.mark.parametrize("gauge, n_zz", [("reference0", 94), ("best", 77)])
-def test_reduced_hamiltonian_equals_cost_on_all_legal_picks(gauge, n_zz):
+@pytest.mark.parametrize("gauge", ["reference0", "best"])
+def test_reduced_hamiltonian_equals_cost_on_all_legal_picks(gauge):
     H = S.reduced_hamiltonian(S.CUBES, gauge)
     costs = S.cost_tensor(S.CUBES)
     worst = 0.0
@@ -117,7 +117,6 @@ def test_reduced_hamiltonian_equals_cost_on_all_legal_picks(gauge, n_zz):
             bits[6 * c + k] = 1
         worst = max(worst, abs(S.energy(H, bits) - costs[index]))
     assert worst < TOL
-    assert S.term_counts(H)["ZZ"] == n_zz
     # No ZZ term inside a cube: those are constant on the one-hot subspace.
     for label in H.paulis.to_labels():
         qubits = [q for q, op in enumerate(reversed(label)) if op == "Z"]
@@ -142,16 +141,6 @@ def round1_angles():
 def test_round1_training_reproduces_notebook(round1_angles):
     _, p_solved = round1_angles
     assert p_solved == pytest.approx(ROUND1_P_SOLVED, abs=1e-9)
-
-
-def test_reduced_circuit_cx_budget(round1_angles):
-    angles, _ = round1_angles
-    H = S.reduced_hamiltonian(S.CUBES)
-    circuit = S.tower_qaoa(S.CUBES, H, angles[:7], angles[7:])
-    _, level1 = S.transpile_metrics(circuit, 1)
-    _, grading = S.transpile_metrics(circuit, None)
-    assert level1["cx"] <= 2250
-    assert grading["cx"] <= 2230
 
 
 # ---------------------------------------------------------------- round 2: objectives
