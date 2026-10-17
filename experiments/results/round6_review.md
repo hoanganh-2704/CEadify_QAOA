@@ -1,0 +1,10 @@
+# Round 6 review (depth sweep p = 1..10, N = 4): final round
+
+- **Verdict:** accept. The only change was saving the angles at every p, and the recipe stayed the same. The p = 7 angles match `round4.json` with drift 0.0, so the sweep and the ported notebook use the same circuit. In noiseless simulation, P(solved) climbs from 1.14% (p = 1, 314 CX) to 35.12% (p = 7, 1958 CX) to 55.19% (p = 10, 2780 CX). Each layer costs 274 CX. Seed spreads are ≤ 0.04 points.
+- **Invariant and pytest line:** every (seed, p) P(solved) recomputes from that p's stored angles. The per-p median/min/max are rebuilt from the runs, and the p = 7 drift is recomputed against round 4. My run printed `experiments/tests_round6.py: 4 passed in 3.57s`; the student's full suite printed `99 passed in 44.53s`.
+- **Course question:** the round-5 answer is accepted in part. "Six times more legal picks, same 2 answers, same 7 layers" correctly explains the drop and ties p to annealing time. The team should still say out loud that the run measured no speedup and expected none, because brute force wins at both sizes. The question now owed is noise: these curves are noiseless, so which p survives a real device?
+- **Recommendation for the team (not a student assignment):**
+  - **SV1:** it is noiseless, so the table holds there. Keep the ported p = 7 and report it as is; p = 10 would only add simulation time and a number that is no longer the notebook's.
+  - **QPU:** do not use p = 7. A rough lower bound (noise was not measured) is P(solved) × 0.995^CX, the share of shots with no two-qubit error. That gives about 1.9e-5 at p = 7, below the 0.154% random-legal baseline. Even at p = 1 it is only about 0.24% (21% error-free shots), before routing SWAPs add more CX.
+  - **If the team runs hardware at all:** use p = 1 or 2, only with a human go-ahead, post-select one-hot shots, and compare against the random baseline next to the matching SV1 row. Present this as an estimate, not a measurement.
+- **What I refused to do:** re-run training, pick a p for the team beyond this advice, claim a noisy-hardware number, or run anything on qBraid, SV1 or a QPU.

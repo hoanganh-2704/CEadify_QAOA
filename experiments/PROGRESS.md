@@ -82,6 +82,40 @@ problems, and how a fixed p acts like a fixed annealing time.
 (seeds 0–2), how do exact P(solved) and GRADING CX/depth change for
 p = 1…10? From what p does an extra layer stop paying for its CX?
 
+## Round 6: depth sweep p = 1…10 ✅ accepted (last round)
+
+The student wrote `tests_round6.py` first (red: `4 errors`; green:
+`4 passed`). Each seed was trained once up to p = 10, saving the angles at
+every p. The p = 7 angles match round 4 exactly (drift 0.0). The
+orchestrator re-ran everything: 99 passed.
+
+| p | Exact P(solved), median of 3 seeds | CX (GRADING) | Depth | Rough QPU estimate P·0.995^CX |
+|---|---|---|---|---|
+| 1 | 1.14% | 314 | 180 | ≈ 0.24% |
+| 2 | 2.85% | 588 | 297 | ≈ 0.15% |
+| 3 | 6.34% | 862 | 425 | ≈ 0.08% |
+| 4 | 12.00% | 1136 | 551 | ≈ 0.04% |
+| 5 | 20.29% | 1410 | 666 | ≈ 0.02% |
+| 6 | 27.39% | 1684 | 792 | ≈ 0.006% |
+| 7 | 35.12% | 1958 | 920 | ≈ 0.002% |
+| 8 | 41.83% | 2232 | 1038 | — |
+| 9 | 48.52% | 2506 | 1168 | — |
+| 10 | 55.19% | 2780 | 1286 | — |
+
+Seed spreads are ≤ 0.04 points. Each layer costs exactly 274 CX. In
+**noiseless** simulation no layer up to p = 10 stopped paying (about 6.7
+points per layer from p = 8 on).
+
+**Teacher's recommendation:**
+- **SV1 (noiseless):** keep p = 7.
+- **Real QPU:** the rough bound P(solved) · 0.995^CX is below the 0.154%
+  random baseline at p = 7, and only about 0.24% even at p = 1, before
+  routing adds more CX. If the team runs hardware at all, use p = 1–2 with a
+  human go-ahead, post-select one-hot shots, and present the numbers as
+  estimates. **Noise was not measured**; the last column is a back-of-envelope
+  bound, not data.
+- Say out loud that no speedup was measured or expected.
+
 **Teacher's question:** if nothing in the accepted recipe changes, how does
 it do on `make_puzzle(5, 16)`? That is 30 qubits, the largest size under
 SV1's 34-qubit limit. How do qubits, CX, depth and P(solved) grow from
