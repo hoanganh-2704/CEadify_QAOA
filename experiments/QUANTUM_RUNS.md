@@ -64,11 +64,23 @@ N = 3, p = 1 circuit should also run on SV1, which is cheap.
 
 | # | Date / time | Device | p | Qubits | CX after device transpile | Shots | Job ID | Credits | Valid one-hot shots | Solved towers | P(solved) | vs prediction |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | | | | |
+| 2 | 2026-10-17 | `aws:aws:sim:sv1` | 1 (N = 3, `make_puzzle(3, 0)`) | 19 (18 + marker) | 200 (GRADING); file holds 215 | 1000 | `aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6` | _see qBraid jobs page_ | 1000/1000 (marker dropped 0) | 377 | **37.70%** (random post-selected 7.41%) | exact 36.38%; +1.3 pts, within 1σ (±1.5) ✅ |
+
+Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
+`results/hardware_n3_p1.qasm` (SHA-256 checked before sending).
 
 ## What each run changed
 
 <!-- One short entry per run: what we expected, what we measured, the gap, and
 what we changed or concluded because of it. -->
 
-_No runs yet._ `submit_job` in `solution.ipynb` is still the team's to write.
+**Run 2 (SV1, N = 3, p = 1).** Expected 36.4% ± 1.5; measured 37.7%. The
+whole path (QASM file → `submit_job` → SV1 → `split_marker` → decode →
+`solves`) works on a real qBraid job, and every shot is a legal one-hot
+pick, as the W state and XY mixer guarantee. Nothing changed; this is the
+noiseless reference row for the IonQ job.
+
+Setup changes before the runs: `submit_job` was written by Claude Code at
+the team's request (disclose it in the AI use note). The first two attempts
+failed authentication (the key saved on the machine had been rejected);
+nothing was sent. They succeeded after the team supplied a new key.

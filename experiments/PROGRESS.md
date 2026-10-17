@@ -155,14 +155,29 @@ first. Expected about 35 kept and 10 solved vs 2.6 by chance (see
 
 ## Rounds 8–10: preparing the hardware run (planned by the teacher)
 
-- **Round 8 (running):** is the QASM file for the IonQ job (N = 3, p = 1,
+- **Round 8 ✅ accepted.** The teacher re-checked the SHA-256, confirmed the
+  post-red test edits changed only test data (so the test is not weaker),
+  counted the file's 215 CX itself, and confirmed `split_marker` is safe:
+  qubit 0 reads 1 in 25–32% of shots, far from the 0.9 marker threshold.
+  Teacher's run: 10 passed. Course question owed: should the README row say
+  200 or 215 CX, and why? Details: `results/hardware_n3_p1.qasm`,
+  19 qubits (18 + marker), SHA-256 `a666efe3…ce515e`, 200 CX / depth 135 by
+  the GRADING call (the file itself holds 215 CX because `prepare` uses
+  opt level 1). Noiseless Aer on the loaded file: 36.95%, all one-hot. The
+  round-7 noisy counts are reproduced exactly. It also found that
+  `helpers.strip_marker` crashes if any shot reads the marker as 0, which
+  noisy hardware will cause; the new `split_marker` drops those shots
+  instead. Tests: round 8 10 passed; full suite 117 passed. Original
+  question: is the QASM file for the IonQ job (N = 3, p = 1,
   saved round-7 angles, with the marker qubit from `prepare`) the same circuit
   that produced the round-7 numbers, and does the counts → decode →
   keep-one-hot → `solves()` pipeline read results correctly, including bit
   order?
-- **Round 9 (planned):** how does the N = 3, p = 1 prediction hold up as the
-  assumed noise changes (`cx` 0.3/0.5/1%, readout 0.5/2%)? Report expected
-  kept and solved counts and the p-value range at 200 shots.
+- **Round 9 (running):** for the submitted 215-CX file, what kept and
+  solved counts should 100 IonQ shots give for `cx` error 0.3/0.5/1% ×
+  readout 0.5/2%? Report 95% intervals and p-values against 7.41%. The test
+  checks the file hash, that the noise-off run matches exact, and that every
+  number recomputes from saved counts.
 - **Round 10 (planned):** a fixed analysis script, tested on simulated
   counts, that turns hardware counts into a README results row with a
   binomial test against 7.41%.
