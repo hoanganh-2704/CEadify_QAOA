@@ -1,21 +1,25 @@
 # Credentials: never commit API keys or tokens in any form.
 .qbraid/
 .qiskit/
+.env
+.env.*
 
 # Python and Jupyter
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
+.pytest_cache/
 .venv/
 venv/
+*.qpy
 
 # Editors and OS
 .vscode/
 .idea/
 .DS_Store
 
-# Judges only: the judging sheet is shared privately, never published.
-judging/
-
-.env
-.env.*
+# Not part of the submission: deck screenshots/exports (slides.pdf at the root is the deliverable), logs, scratch
+presentation/export/
+*.log
+scratch/
+report.pdf

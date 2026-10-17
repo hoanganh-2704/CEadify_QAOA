@@ -1,0 +1,365 @@
+{
+ "provenance": {
+  "script": "Resources/scratch/visuals/measure_cx.py",
+  "transpile": "src.runtime.prepare_safe (default optimization level, seed_transpiler 7)",
+  "cx_from": "src.runtime.circuit_metrics",
+  "angles": "results/angles_Cc_N4.json",
+  "qaoa_P": "src.compact.Reduced (exact on the 6^4 legal codes)",
+  "grover_P": "sin^2((2K+1) theta), checked with runtime.exact_distribution at K in [1, 5, 10, 19]",
+  "qiskit": "2.6.0",
+  "python": "3.12.15",
+  "seconds": 15.9
+ },
+ "qaoa": [
+  {
+   "p": 1,
+   "cx": 368,
+   "depth": 268,
+   "qubits": 14,
+   "P_exact": 0.010958747135284474,
+   "fit_cx": 368
+  },
+  {
+   "p": 2,
+   "cx": 728,
+   "depth": 524,
+   "qubits": 14,
+   "P_exact": 0.02738491561254967,
+   "fit_cx": 728
+  },
+  {
+   "p": 3,
+   "cx": 1088,
+   "depth": 782,
+   "qubits": 14,
+   "P_exact": 0.047732291170565114,
+   "fit_cx": 1088
+  },
+  {
+   "p": 4,
+   "cx": 1448,
+   "depth": 1039,
+   "qubits": 14,
+   "P_exact": 0.08816212991406387,
+   "fit_cx": 1448
+  },
+  {
+   "p": 5,
+   "cx": 1808,
+   "depth": 1296,
+   "qubits": 14,
+   "P_exact": 0.14193219289891193,
+   "fit_cx": 1808
+  },
+  {
+   "p": 6,
+   "cx": 2168,
+   "depth": 1553,
+   "qubits": 14,
+   "P_exact": 0.21194787542241614,
+   "fit_cx": 2168
+  },
+  {
+   "p": 7,
+   "cx": 2528,
+   "depth": 1814,
+   "qubits": 14,
+   "P_exact": 0.3235236769845017,
+   "fit_cx": 2528
+  },
+  {
+   "p": 8,
+   "cx": 2888,
+   "depth": 2069,
+   "qubits": 14,
+   "P_exact": 0.4186939810749138,
+   "fit_cx": 2888
+  },
+  {
+   "p": 9,
+   "cx": 3248,
+   "depth": 2323,
+   "qubits": 14,
+   "P_exact": 0.5016471967388572,
+   "fit_cx": 3248
+  },
+  {
+   "p": 10,
+   "cx": 3608,
+   "depth": 2581,
+   "qubits": 14,
+   "P_exact": 0.5790441975443475,
+   "fit_cx": 3608
+  },
+  {
+   "p": 11,
+   "cx": 3968,
+   "depth": 2838,
+   "qubits": 14,
+   "P_exact": 0.6608386886307813,
+   "fit_cx": 3968
+  },
+  {
+   "p": 12,
+   "cx": 4328,
+   "depth": 3095,
+   "qubits": 14,
+   "P_exact": 0.7293635319327536,
+   "fit_cx": 4328
+  },
+  {
+   "p": 13,
+   "cx": 4688,
+   "depth": 3352,
+   "qubits": 14,
+   "P_exact": 0.7839539285945887,
+   "fit_cx": 4688
+  },
+  {
+   "p": 14,
+   "cx": 5048,
+   "depth": 3610,
+   "qubits": 14,
+   "P_exact": 0.8301861450306344,
+   "fit_cx": 5048
+  },
+  {
+   "p": 15,
+   "cx": 5408,
+   "depth": 3866,
+   "qubits": 14,
+   "P_exact": 0.8677836302262604,
+   "fit_cx": 5408
+  },
+  {
+   "p": 16,
+   "cx": 5768,
+   "depth": 4124,
+   "qubits": 14,
+   "P_exact": 0.8941371466657012,
+   "fit_cx": 5768
+  },
+  {
+   "p": 17,
+   "cx": 6128,
+   "depth": 4381,
+   "qubits": 14,
+   "P_exact": 0.916550913354807,
+   "fit_cx": 6128
+  },
+  {
+   "p": 18,
+   "cx": 6488,
+   "depth": 4637,
+   "qubits": 14,
+   "P_exact": 0.9337103819143053,
+   "fit_cx": 6488
+  },
+  {
+   "p": 19,
+   "cx": 6848,
+   "depth": 4898,
+   "qubits": 14,
+   "P_exact": 0.9505019165338597,
+   "fit_cx": 6848
+  },
+  {
+   "p": 20,
+   "cx": 7208,
+   "depth": 5155,
+   "qubits": 14,
+   "P_exact": 0.964072981755512,
+   "fit_cx": 7208
+  },
+  {
+   "p": 21,
+   "cx": 7568,
+   "depth": 5408,
+   "qubits": 14,
+   "P_exact": 0.9726528237484682,
+   "fit_cx": 7568
+  },
+  {
+   "p": 22,
+   "cx": 7928,
+   "depth": 5665,
+   "qubits": 14,
+   "P_exact": 0.9788444881341285,
+   "fit_cx": 7928
+  },
+  {
+   "p": 23,
+   "cx": 8288,
+   "depth": 5922,
+   "qubits": 14,
+   "P_exact": 0.9826455501041838,
+   "fit_cx": 8288
+  },
+  {
+   "p": 24,
+   "cx": 8648,
+   "depth": 6179,
+   "qubits": 14,
+   "P_exact": 0.9854377147273136,
+   "fit_cx": 8648
+  }
+ ],
+ "grover": [
+  {
+   "K": 1,
+   "cx": 225,
+   "depth": 330,
+   "qubits": 14,
+   "P_exact": 0.013831791769923659,
+   "fit_cx": 225,
+   "P_statevector": 0.013831791769923598
+  },
+  {
+   "K": 2,
+   "cx": 434,
+   "depth": 635,
+   "qubits": 14,
+   "P_exact": 0.03810600202501952,
+   "fit_cx": 434
+  },
+  {
+   "K": 3,
+   "cx": 643,
+   "depth": 940,
+   "qubits": 14,
+   "P_exact": 0.07376740236889043,
+   "fit_cx": 643
+  },
+  {
+   "K": 4,
+   "cx": 852,
+   "depth": 1245,
+   "qubits": 14,
+   "P_exact": 0.11993682323811297,
+   "fit_cx": 852
+  },
+  {
+   "K": 5,
+   "cx": 1061,
+   "depth": 1550,
+   "qubits": 14,
+   "P_exact": 0.17547603816940457,
+   "fit_cx": 1061,
+   "P_statevector": 0.175476038169402
+  },
+  {
+   "K": 6,
+   "cx": 1270,
+   "depth": 1855,
+   "qubits": 14,
+   "P_exact": 0.23901582478582023,
+   "fit_cx": 1270
+  },
+  {
+   "K": 7,
+   "cx": 1479,
+   "depth": 2160,
+   "qubits": 14,
+   "P_exact": 0.3089897205838993,
+   "fit_cx": 1479
+  },
+  {
+   "K": 8,
+   "cx": 1688,
+   "depth": 2465,
+   "qubits": 14,
+   "P_exact": 0.3836726413317656,
+   "fit_cx": 1688
+  },
+  {
+   "K": 9,
+   "cx": 1897,
+   "depth": 2770,
+   "qubits": 14,
+   "P_exact": 0.4612234100090004,
+   "fit_cx": 1897
+  },
+  {
+   "K": 10,
+   "cx": 2106,
+   "depth": 3075,
+   "qubits": 14,
+   "P_exact": 0.5397301478115278,
+   "fit_cx": 2106,
+   "P_statevector": 0.5397301478115125
+  },
+  {
+   "K": 11,
+   "cx": 2315,
+   "depth": 3380,
+   "qubits": 14,
+   "P_exact": 0.617257408185536,
+   "fit_cx": 2315
+  },
+  {
+   "K": 12,
+   "cx": 2524,
+   "depth": 3685,
+   "qubits": 14,
+   "P_exact": 0.6918938918831213,
+   "fit_cx": 2524
+  },
+  {
+   "K": 13,
+   "cx": 2733,
+   "depth": 3990,
+   "qubits": 14,
+   "P_exact": 0.7617995667082641,
+   "fit_cx": 2733
+  },
+  {
+   "K": 14,
+   "cx": 2942,
+   "depth": 4295,
+   "qubits": 14,
+   "P_exact": 0.8252510302980673,
+   "fit_cx": 2942
+  },
+  {
+   "K": 15,
+   "cx": 3151,
+   "depth": 4600,
+   "qubits": 14,
+   "P_exact": 0.8806839975990869,
+   "fit_cx": 3151
+  },
+  {
+   "K": 16,
+   "cx": 3360,
+   "depth": 4905,
+   "qubits": 14,
+   "P_exact": 0.9267318655842012,
+   "fit_cx": 3360
+  },
+  {
+   "K": 17,
+   "cx": 3569,
+   "depth": 5210,
+   "qubits": 14,
+   "P_exact": 0.962259404464264,
+   "fit_cx": 3569
+  },
+  {
+   "K": 18,
+   "cx": 3778,
+   "depth": 5515,
+   "qubits": 14,
+   "P_exact": 0.9863907447965298,
+   "fit_cx": 3778
+  },
+  {
+   "K": 19,
+   "cx": 3987,
+   "depth": 5820,
+   "qubits": 14,
+   "P_exact": 0.9985309705165659,
+   "fit_cx": 3987,
+   "P_statevector": 0.9985309705165106
+  }
+ ]
+}
