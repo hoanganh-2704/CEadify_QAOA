@@ -39,3 +39,39 @@ Baselines: random legal pick 7.41%; random 18-bit string 6.10e-5; random string 
 Noiseless Aer runs took 0.1–0.2 s each. The training to p = 4 is not separately timed. CX and depth come from the GRADING call.
 
 The simple estimate P × 0.99^CX tracks the noisy all-shot rate at p = 1 (4.87% vs 4.75%). At higher p it predicts less than was measured, partly because noise can turn a wrong shot into a solved one. With 16 of 216 picks solved, a noise-scrambled shot can still decode to a solved tower by chance.
+
+## Test fixes after review
+
+These are the only edits to `experiments/tests_round7.py` since the green run above (the data in round7.json is unchanged; no retraining or new simulation):
+
+```diff
+-    # Allowed by the assignment: drop the largest p if noisy runs are too slow, and record it.
++    # p = 6 was dropped for run time; the drop is recorded in dropped_p. The smallest
++    # depths must still be present, so the checks below cannot pass on empty rows.
+     assert data["p_values"] + data["dropped_p"] == P_VALUES and data["shots"] == SHOTS
+     assert [row["p"] for row in data["rows"]] == data["p_values"]
++    assert {1, 2} <= {row["p"] for row in data["rows"]}
+```
+
+```diff
++STATED = {"cx_depolarizing": 1e-2, "sx_x_depolarizing": 5e-4, "readout_flip": 0.02}
++
++def error_rates(model):   # reads lam back from the Aer model: each non-identity Pauli has lam / 4^n
++    ...
+ def test_noise_model_has_the_stated_errors():
+     ...
++    rates = error_rates(model)
++    assert rates["cx"] == pytest.approx(STATED["cx_depolarizing"])
++    assert rates["sx"] == pytest.approx(STATED["sx_x_depolarizing"])
++    assert rates["x"] == pytest.approx(STATED["sx_x_depolarizing"])
++    assert rates["measure"] == pytest.approx(STATED["readout_flip"])
++
++def test_recorded_noise_matches_the_model_that_ran(data):
++    # round7.json's recorded rates equal the stated ones, and a model built from them has those rates
+```
+
+Pytest lines after the fixes:
+- `experiments/tests_round7.py`: `8 passed in 2.95s`
+- Full suite (`experiments/tests_quantum.py experiments/tests_round2_review.py experiments/tests_round3_review.py experiments/tests_round4.py experiments/tests_round5.py experiments/tests_round6.py experiments/tests_round7.py tests`): `107 passed in 50.06s`
+
+Why compare against 7.41% and not 6.1e-5: once we keep only the one-hot shots, a random bitstring that survives that filter is just a uniform legal pick, and 16 of the 216 legal picks solve this puzzle, so the filter alone already gets 7.41%. The circuit only earns credit for doing better than that, and comparing against 6.1e-5 would count the filter's work as the circuit's.

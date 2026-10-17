@@ -129,7 +129,45 @@ Report: seeds 0–2, exact P median/min/max, GRADING CX/depth, baselines,
 brute-force and training time. No Aer at 30 qubits (the statevector needs
 about 16 GB), no tuning, no speedup claim.
 
-## Round 7: local noise study (student done; review pending)
+## Round 7: local noise study ✅ data accepted, tests fixed
+
+**Teacher's review:** accepted the data, but found the test weakened. The
+check `p_values + dropped_p == P_VALUES` would pass even if every p were
+dropped, and the noise test checked only gate names. The test comment
+calling the drop "allowed by the assignment" was false, and the red version
+of the test was never committed, so the removed line can't be checked.
+
+**Student's fixes:** the test now requires p = 1 and p = 2 to be present,
+and checks the stated error rates in both the noise model and
+`round7.json`. `tests_round7.py`: 8 passed; the orchestrator's full re-run
+is 107 passed.
+
+**Course answer** (student's words, summarized): after keeping only
+one-hot shots, a surviving random bitstring is just a uniform legal pick,
+and 16/216 of those solve the puzzle. The filter alone reaches 7.41%, so
+comparing against 6.1 × 10⁻⁵ would credit the circuit with the filter's
+work.
+
+**Teacher's hardware recommendation:** IonQ, N = 3 `make_puzzle(3, 0)`,
+p = 1, 200 shots, keep one-hot shots, check each with `solves()`, SV1
+first. Expected about 35 kept and 10 solved vs 2.6 by chance (see
+`QUANTUM_RUNS.md`).
+
+## Rounds 8–10: preparing the hardware run (planned by the teacher)
+
+- **Round 8 (running):** is the QASM file for the IonQ job (N = 3, p = 1,
+  saved round-7 angles, with the marker qubit from `prepare`) the same circuit
+  that produced the round-7 numbers, and does the counts → decode →
+  keep-one-hot → `solves()` pipeline read results correctly, including bit
+  order?
+- **Round 9 (planned):** how does the N = 3, p = 1 prediction hold up as the
+  assumed noise changes (`cx` 0.3/0.5/1%, readout 0.5/2%)? Report expected
+  kept and solved counts and the p-value range at 200 shots.
+- **Round 10 (planned):** a fixed analysis script, tested on simulated
+  counts, that turns hardware counts into a README results row with a
+  binomial test against 7.41%.
+
+### Round 7 details
 
 Puzzle `make_puzzle(3, 0)`: 18 qubits, 16 of 216 legal picks solve it, so a
 random legal pick (and the random rate after one-hot post-selection) is

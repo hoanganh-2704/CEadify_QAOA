@@ -516,6 +516,60 @@ def rates_from_counts(counts, cubes):
             "p_post_selected": m["solved"] / m["valid"] if m["valid"] else 0.0}
 
 
+# ---------------------------------------------------------------- hardware file and readout
+
+def hardware_circuit(cubes, angles, gauge="best"):
+    """The circuit submit_job would receive: the accepted recipe at the given angles,
+    passed through resources.helpers.prepare (marker qubit at 1, measure all, transpile)."""
+    from resources.helpers import prepare
+
+    p = len(angles) // 2
+    H = reduced_hamiltonian(cubes, gauge)
+    return prepare(tower_qaoa(cubes, H, angles[:p], angles[p:], MIX_PAIRS))
+
+
+def qasm_text(circuit):
+    from qiskit import qasm2
+
+    return qasm2.dumps(circuit)
+
+
+def load_qasm(path):
+    from qiskit import qasm2
+
+    return qasm2.loads(Path(path).read_text())
+
+
+def run_loaded(circuit, shots=2000, seed=SEED, model=None):
+    """Aer counts for a circuit that already measures every qubit."""
+    sim = AerSimulator(method="statevector", seed_simulator=seed, noise_model=model)
+    return sim.run(circuit, shots=shots).result().get_counts()
+
+
+def split_marker(raw):
+    """Like helpers.strip_marker, but a shot whose marker reads 0 (readout noise) is dropped
+    and counted instead of raising. The end holding more marker-1 shots is the marker end."""
+    left = sum(n for k, n in raw.items() if k[0] == "1")
+    right = sum(n for k, n in raw.items() if k[-1] == "1")
+    if left >= right:
+        kept = {k[1:]: n for k, n in raw.items() if k[0] == "1"}
+    else:
+        kept = {k[:-1][::-1]: n for k, n in raw.items() if k[-1] == "1"}
+    return kept, sum(raw.values()) - sum(kept.values())
+
+
+def results_row(counts, cubes, marker=False, **table):
+    """Counts -> results-table fields. P(correct tower) over all shots and post-selected on
+    one-hot shots; every solved shot is checked with solves()."""
+    dropped = 0
+    if marker:
+        counts, dropped = split_marker(counts)
+    m = shot_metrics(counts, cubes)
+    return {**table, "total": m["shots"], "kept": m["valid"], "solved": m["solved"],
+            "marker_dropped": dropped, "p_all": m["solved"] / m["shots"],
+            "p_post_selected": m["solved"] / m["valid"] if m["valid"] else 0.0}
+
+
 def shot_metrics(counts, cubes):
     """Valid (one-hot) and solved shot counts, each solved tower checked with solves()."""
     shots = sum(counts.values())

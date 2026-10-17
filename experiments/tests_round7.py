@@ -51,11 +51,44 @@ def test_rates_post_select_exactly_the_one_hot_shots():
     assert rates["p_post_selected"] == pytest.approx(7 / 12)
 
 
+STATED = {"cx_depolarizing": 1e-2, "sx_x_depolarizing": 5e-4, "readout_flip": 0.02}
+
+
+def error_rates(model):
+    """Read the rates back out of the Aer noise model. A depolarizing error with
+    parameter lam on n qubits gives each non-identity Pauli probability lam / 4^n."""
+    rates = {}
+    for error in model.to_dict()["errors"]:
+        ops = tuple(error["operations"])
+        if error["type"] == "roerror":
+            rates["measure"] = error["probabilities"][0][1]
+        else:
+            n = 2 if ops == ("cx",) else 1
+            rates[ops[0]] = 4 ** n * min(error["probabilities"])
+    return rates
+
+
 def test_noise_model_has_the_stated_errors():
     model = S.noise_model()
     instructions = set(model.noise_instructions)
     assert {"cx", "sx", "x", "measure"} <= instructions
     assert "rz" not in instructions
+    rates = error_rates(model)
+    assert rates["cx"] == pytest.approx(STATED["cx_depolarizing"])
+    assert rates["sx"] == pytest.approx(STATED["sx_x_depolarizing"])
+    assert rates["x"] == pytest.approx(STATED["sx_x_depolarizing"])
+    assert rates["measure"] == pytest.approx(STATED["readout_flip"])
+
+
+def test_recorded_noise_matches_the_model_that_ran(data):
+    recorded = data["noise"]
+    for key, value in STATED.items():
+        assert recorded[key] == pytest.approx(value)
+    assert recorded["rz"] == 0.0
+    rates = error_rates(S.noise_model(recorded["cx_depolarizing"],
+                                      recorded["sx_x_depolarizing"], recorded["readout_flip"]))
+    assert rates["cx"] == pytest.approx(recorded["cx_depolarizing"])
+    assert rates["measure"] == pytest.approx(recorded["readout_flip"])
 
 
 # ---------------------------------------------------------------- results file
@@ -80,9 +113,11 @@ def test_puzzle_seed_is_the_smallest_with_an_answer(data):
 
 
 def test_setup_matches_the_assignment(data):
-    # Allowed by the assignment: drop the largest p if noisy runs are too slow, and record it.
+    # p = 6 was dropped for run time; the drop is recorded in dropped_p. The smallest
+    # depths must still be present, so the checks below cannot pass on empty rows.
     assert data["p_values"] + data["dropped_p"] == P_VALUES and data["shots"] == SHOTS
     assert [row["p"] for row in data["rows"]] == data["p_values"]
+    assert {1, 2} <= {row["p"] for row in data["rows"]}
     assert data["seed_simulator"] == 7 and data["jitter_seed"] == 0
     assert data["objective"] == "gibbs1" and data["mixer"] == "full"
     assert not any("adopt" in key or "winner" in key or "best_p" in key for key in data)

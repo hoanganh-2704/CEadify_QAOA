@@ -30,12 +30,34 @@ The QPU column is a back-of-envelope bound assuming about 99.5% two-qubit
 fidelity and no routing overhead. It is not a measurement. Device transpiling
 usually adds CX, which makes it worse.
 
+## Prediction for the IonQ job (round 7 + teacher's review)
+
+The round-7 noise study (assumed: 1% `cx` depolarizing, 0.05% `sx`/`x`, 2%
+readout, no routing) says the 4-cube circuit cannot show a signal on
+hardware even at p = 1: about 0.5 solved shots expected, which can't be told
+apart from random. The 3-cube puzzle can:
+
+| Candidate job | Credits | Expected one-hot shots kept | Expected solved | Random would give | Chance random does this well |
+|---|---|---|---|---|---|
+| **N = 3 `make_puzzle(3, 0)`, p = 1, 200 shots** (teacher's recommendation) | 1630 (≈ $16.30) | ≈ 35 | ≈ 10 | ≈ 2.6 | ≈ 2 × 10⁻⁴ |
+| N = 3, p = 1, 100 shots | 830 (≈ $8.30) | ≈ 17 | ≈ 5 | ≈ 1.3 | ≈ 7 × 10⁻³ |
+| N = 4, p = 1, 100 shots | 830 | — | ≈ 0.5 | ≈ 0.5 | indistinguishable |
+
+These are predictions from an assumed noise model, not measurements. IonQ's
+real error rates may be better or worse. The comparison is against the
+**post-selected random rate (7.41%)**, because we keep only one-hot shots and
+a random legal pick of 3 cubes solves 16/216 of the time.
+
+To follow GRADING.md ("add a row for it next to the matching SV1 row"), the
+N = 3, p = 1 circuit should also run on SV1, which is cheap.
+
 ## Planned jobs
 
 | Order | Device | Pricing (from qBraid, read-only query) | Status |
 |---|---|---|---|
-| 1 | `aws:aws:sim:sv1` | 7.5 credits/min; queue 0 | Approved by the team; waiting on `submit_job` |
-| 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity) | 30 credits/task + 8 credits/shot (100 shots = 830 credits ≈ $8.30); queue 5 | Device chosen by the team; p and shots decided after round 7 |
+| 1a | `aws:aws:sim:sv1`: N = 4, p = 7, 1000 shots (main result) | 7.5 credits/min; queue 0 | Approved by the team; waiting on `submit_job` |
+| 1b | `aws:aws:sim:sv1`: N = 3 `make_puzzle(3, 0)`, p = 1 (the SV1 row to sit next to the IonQ row) | same | Proposed; needs the team's OK |
+| 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity): N = 3, p = 1, 100 or 200 shots | 30 credits/task + 8 credits/shot (100 shots = 830 ≈ $8.30; 200 shots = 1630 ≈ $16.30); queue 5 | Device chosen by the team; shot count needs the team's explicit OK |
 | — | `rigetti:rigetti:qpu:cepheus-1-108q` | 12,000 credits/min (≈ $120/min) | Considered and set aside: time-billed, and its nearest-neighbour wiring adds SWAPs |
 
 ## Run log
