@@ -30,6 +30,14 @@ The QPU column is a back-of-envelope bound assuming about 99.5% two-qubit
 fidelity and no routing overhead. It is not a measurement. Device transpiling
 usually adds CX, which makes it worse.
 
+## Planned jobs
+
+| Order | Device | Pricing (from qBraid, read-only query) | Status |
+|---|---|---|---|
+| 1 | `aws:aws:sim:sv1` | 7.5 credits/min; queue 0 | Approved by the team; waiting on `submit_job` |
+| 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity) | 30 credits/task + 8 credits/shot (100 shots = 830 credits ≈ $8.30); queue 5 | Device chosen by the team; p and shots decided after round 7 |
+| — | `rigetti:rigetti:qpu:cepheus-1-108q` | 12,000 credits/min (≈ $120/min) | Considered and set aside: time-billed, and its nearest-neighbour wiring adds SWAPs |
+
 ## Run log
 
 | # | Date / time | Device | p | Qubits | CX after device transpile | Shots | Job ID | Credits | Valid one-hot shots | Solved towers | P(solved) | vs prediction |

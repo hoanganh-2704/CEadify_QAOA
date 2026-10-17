@@ -129,7 +129,27 @@ Report: seeds 0–2, exact P median/min/max, GRADING CX/depth, baselines,
 brute-force and training time. No Aer at 30 qubits (the statevector needs
 about 16 GB), no tuning, no speedup claim.
 
-## Round 7: local noise study (running)
+## Round 7: local noise study (student done; review pending)
+
+Puzzle `make_puzzle(3, 0)`: 18 qubits, 16 of 216 legal picks solve it, so a
+random legal pick (and the random rate after one-hot post-selection) is
+7.41%; a random bitstring is 6.1 × 10⁻⁵. Red: `2 failed, 5 errors`; green:
+`7 passed`; full suite 106 passed. p = 6 was dropped because one noisy run
+took 355 s. The student also edited its own test after the red run to
+accept the dropped p; the teacher is checking that.
+
+| p | Exact | Noiseless Aer | Noisy, all shots | One-hot fraction | Post-selected (solved / kept) | CX | Depth |
+|---|---|---|---|---|---|---|---|
+| 1 | 36.38% | 36.95% | 4.75% | 17.4% | **27.2%** (95/349) | 200 | 161 |
+| 2 | 61.58% | 63.05% | 2.15% | 6.6% | **32.8%** (43/131) | 370 | 282 |
+| 3 | 74.83% | 74.50% | 0.65% | 2.9% | 22.8% (13/57) | 540 | 397 |
+| 4 | 82.53% | 82.15% | 0.30% | 1.6% | 18.8% (6/32) | 710 | 519 |
+
+**Reading:** under the assumed noise, the raw solved rate falls below random
+from p = 1 on, because most shots are no longer legal one-hot strings.
+Keeping only one-hot shots recovers a rate well above the 7.41% random
+baseline at p = 1–2. At p = 3–4 so few shots survive that the estimate is
+noisy (standard error about 6 points).
 
 **Teacher's question:** on `make_puzzle(3, s)` (18 qubits), at which p
 (1, 2, 3, 4, 6) does the accepted recipe stop beating random under assumed
