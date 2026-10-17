@@ -58,6 +58,22 @@ says otherwise: full mixer (15 pairs per cube) and p = 7.
 | **QPU** | 3 | Same hardware file, p = 1 | `aws:ionq:qpu:forte-enterprise-1` | 19 (18 + marker) | 200 (file holds 215; IonQ recompiles to native gates) | 135 | 100 | _in IonQ queue_ | 6.1e-5 | _pending_ |
 | **SV1** | **4** | **Round-4 circuit (reduced H, Gibbs, p = 7), sent from `solution.ipynb`** | **`aws:aws:sim:sv1`** | **25 (24 + marker)** | **1958** | **907** | **1000** | **36.20%** (362/1000; exact 35.12%) | **1.2e-7** | **`aws:aws:sim:sv1-d8ed-qjob-6ad3b20238127b44c71ba11b`** |
 
+### Round 10: Grover (ideal oracle) as a reference curve
+
+**Not a cost comparison.** The Grover rows assume a perfect oracle that
+costs nothing; a real oracle (reversible colour-degree checks) was not
+built, and each Grover step would cost at least as much as a QAOA layer.
+Choosing the best k also uses the answer count M, which QAOA never needs.
+No speedup is claimed.
+
+| Puzzle (N cubes) | Method | Device | Qubits | Two-qubit gates | Rounds | P(correct tower) | Random legal pick |
+|---|---|---|---|---|---|---|---|
+| 3 (16/216 answers) | Grover, ideal oracle, best k | local exact | 18 | not measured (oracle unbuilt) | k = 2 | 96.34% exact | 7.41% |
+| 3 | QAOA, round-7 angles | local exact | 18 | 200 / 370 / 710 | p = 1 / 2 / 4 | 36.38% / 61.58% / 82.53% exact | 7.41% |
+| 4 (2/1296 answers) | Grover, ideal oracle, best k | local exact | 24 | not measured (oracle unbuilt) | k = 19 | 99.85% exact | 0.154% |
+| 4 | Grover, ideal oracle | local exact | 24 | not measured | k = 7 | 30.90% exact | 0.154% |
+| 4 | QAOA, round-6 angles | local exact | 24 | 1958 / 2780 | p = 7 / 10 | 35.12% / 55.19% exact | 0.154% |
+
 **Hardware rows:** P(correct tower) counts all shots, as GRADING.md
 defines it. Because noise produces illegal strings, the rows also report
 the rate among one-hot shots only, compared with the 7.41% random rate after

@@ -185,7 +185,19 @@ first. Expected about 35 kept and 10 solved vs 2.6 by chance (see
   readout 0.5/2%? Report 95% intervals and p-values against 7.41%. The test
   checks the file hash, that the noise-off run matches exact, and that every
   number recomputes from saved counts.
-- **Round 10 (assigned; changed at the team's request): Grover vs QAOA.**
+- **Round 10 ✅ accepted: Grover vs QAOA (part a only; part b was skipped,
+  with the scope change written down before the test).** Grover with an
+  ideal oracle peaks at 96.34% (N = 3, k = 2) and 99.85% (N = 4, k = 19).
+  Per round at N = 4: Grover leads at k = 1–3, they tie at 4, and QAOA leads
+  at 5–10 (35.12% vs 30.90% at 7). The teacher required a caption saying
+  this is not a cost comparison, because the ideal oracle is free while
+  each QAOA layer is charged 170–274 CX. Tests: round 10 6 passed; all
+  suites 127 passed (orchestrator re-run). The student fixed its own
+  hand-typed table errors by regenerating them from `round10.json`.
+  **Presentation sentence (teacher):** "With a perfect oracle and a known
+  answer count, Grover reaches 96–100%, but each step needs an unbuilt
+  colour check costing at least a QAOA layer, so it is a reference curve,
+  not a cheaper method, and we claim no speedup." Original assignment:
   The team asked to try Grover as well. This overrides, for this round, the
   v3 prompt's rule against oracle approaches; the challenge's AGENTS.md
   lists Grover adaptive search as a valid direction.
