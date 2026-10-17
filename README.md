@@ -140,5 +140,5 @@ this README is generated from `results/results.json` and `results/facts.json`, n
 * **Transfer:** the angles trained once at N = 4 are reused unchanged for N = 5..8.
 
 Files: `solution.ipynb` (main notebook), `src/` (modules), `tests/`, `scripts/run_heavy.py`, `scripts/run_sv1.py`,
-`scripts/run_qpu.py`, `slides.pdf` (exported from `presentation/index.html`; open that file in a browser to present),
+`scripts/run_qpu.py`, `slides.pdf` (exported from `presentation/index.html`; download the repo and open that file in a browser to present; GitHub shows HTML as source code, so to view it online use [this rendered link](https://htmlpreview.github.io/?https://github.com/hoanganh-2704/CEadify_QAOA/blob/kiarash/presentation/index.html)),
 `results/`, `resources/` (verbatim copy of the starter's helpers).

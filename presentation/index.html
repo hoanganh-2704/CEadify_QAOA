@@ -99,7 +99,14 @@ table.res.dense small{font-size:1.6vh}
 #notes.on{display:block}
 #notes h4{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#93c5fd;margin-bottom:7px}
 @media print{#bar,#help,#notes{display:none!important}}
-</style></head><body>
+</style>
+<noscript><style>
+/* Viewers that block scripts (some previews): show every slide stacked, scroll to read */
+html,body{height:auto!important;overflow:auto!important}
+#stage{position:static!important;display:block!important;padding:2vh 0}
+.slide{display:flex!important;position:relative!important;left:auto!important;top:auto!important;transform:none!important;margin:0 auto 2vh}
+</style></noscript>
+</head><body>
 <div id="stage">
 
 <!-- 1 Title + hook -->
