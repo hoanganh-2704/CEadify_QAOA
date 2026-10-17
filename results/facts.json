@@ -2,13 +2,14 @@
  "brute_force": {
   "towers": 331776,
   "solved": 8,
-  "seconds": 0.153
+  "seconds": 0.152
  },
  "cost_check": {
   "candidates": 6561,
   "zeros": 2,
   "min_nonzero": 2
  },
+ "W1p1_noiseless": 0.18784470964483327,
  "baselines_N4": {
   "bits6N": 1.1920928955078125e-07,
   "WxW": 0.00030483158055174517,
@@ -173,7 +174,72 @@
    "label": "estimate, not run"
   }
  ],
- "generated": "2026-10-17 12:55 EDT",
+ "sv1": {
+  "W1": {
+   "P": 0.301,
+   "se": 0.0072525685105347334,
+   "P_exact": 0.28404116951159974,
+   "job_id": "aws:aws:sim:sv1-5a53-qjob-6ad3adc738127b44c71ba019",
+   "credits": 0.375
+  },
+  "C2": {
+   "P": 0.9855,
+   "se": 0.001890089283605404,
+   "P_exact": 0.9854377147273136,
+   "job_id": "aws:aws:sim:sv1-5a53-qjob-6ad3ad0838127b44c71b9ff4",
+   "credits": 0.375
+  },
+  "G2": {
+   "P": 0.9995,
+   "se": 0.00035346499119429955,
+   "P_exact": 0.9985309705165659,
+   "job_id": "aws:aws:sim:sv1-5a53-qjob-6ad3ad6c38127b44c71ba006",
+   "credits": 0.375
+  },
+  "N5": {
+   "P": 0.466,
+   "se": 0.011154460991011623,
+   "P_exact": 0.4787234105124223,
+   "job_id": "aws:aws:sim:sv1-5a53-qjob-6ad3adf038127b44c71ba022",
+   "credits": 0.375
+  }
+ },
+ "qpu": {
+  "G1": {
+   "id": "G1-QPU",
+   "P": 0.0,
+   "se": 0.0,
+   "P_noiseless": 0.013831791769923598,
+   "baseline": 0.0015432098765432098,
+   "job_id": "rigetti:rigetti:qpu:cepheus-1-108q-5a53-qjob-6ad3b05c38127b44c71ba094",
+   "credits": 44.7126,
+   "cx": 225,
+   "shots": 500
+  },
+  "G1N5": {
+   "id": "G1N5-QPU",
+   "P": 0.0,
+   "se": 0.0,
+   "P_noiseless": 0.0023132274225660427,
+   "baseline": 0.000257201646090535,
+   "job_id": "rigetti:rigetti:qpu:cepheus-1-108q-5a53-qjob-6ad3b1b338127b44c71ba0fc",
+   "credits": 48.76540000000001,
+   "cx": 287,
+   "shots": 500
+  },
+  "W1p1": {
+   "id": "W1p1-QPU",
+   "P": 0.0,
+   "se": 0.0,
+   "P_noiseless": 0.18784470964483357,
+   "baseline": 0.04938271604938271,
+   "job_id": "rigetti:rigetti:qpu:cepheus-1-108q-5a53-qjob-6ad3ae8a38127b44c71ba037",
+   "credits": 42.3102,
+   "cx": 166,
+   "shots": 500
+  }
+ },
+ "generated": "2026-10-17 14:21 EDT",
  "versions": {
   "qiskit": "2.6.0",
   "qiskit_aer": "0.17.2"

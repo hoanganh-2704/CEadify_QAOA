@@ -68,6 +68,31 @@ def strip_marker_safe(raw):
                      "was the circuit built with prepare_safe?")
 
 
+def strip_marker_noisy(raw):
+    """Hardware version of strip_marker_safe. Noise can flip the two marker bits, so the bit order is taken from the
+    pattern most shots show ('1...0' is Qiskit order, '0...1' reversed) and the data bits of every shot are returned
+    in Qiskit order (no shot is dropped or post-selected). Also returns how often each marker came back wrong:
+    {"qiskit_order": bool, "top_marker_error": fraction, "idle_qubit_error": fraction}."""
+    keys = {}
+    for k, v in raw.items():
+        k = k.replace(" ", "")
+        keys[k] = keys.get(k, 0) + v
+    total = sum(keys.values())
+    fwd = sum(v for k, v in keys.items() if k[0] == "1" and k[-1] == "0")
+    rev = sum(v for k, v in keys.items() if k[0] == "0" and k[-1] == "1")
+    qiskit_order = fwd >= rev
+    out = {}
+    for k, v in keys.items():
+        data = k[1:-1] if qiskit_order else k[1:-1][::-1]
+        out[data] = out.get(data, 0) + v
+    top = (lambda k: k[0]) if qiskit_order else (lambda k: k[-1])
+    idle = (lambda k: k[-1]) if qiskit_order else (lambda k: k[0])
+    stats = {"qiskit_order": qiskit_order,
+             "top_marker_error": sum(v for k, v in keys.items() if top(k) != "1") / total if total else 0.0,
+             "idle_qubit_error": sum(v for k, v in keys.items() if idle(k) != "0") / total if total else 0.0}
+    return out, stats
+
+
 def fingerprint(circuit):
     """SHA-256 of the circuit's qpy serialisation (with a fixed name, so two equal circuits built separately match):
     changes whenever a gate, parameter value or qubit count changes."""
@@ -245,11 +270,34 @@ def replay_mismatch(saved, qc, shots):
     return None
 
 
-def run_on_qbraid(circuit, shots=1000, tag=None):
-    """Prepare the circuit, get counts (saved SV1 run, new SV1 job, or local Aer) and strip the markers."""
+def replay_sv1(circuit, shots, tag):
+    """Saved SV1 counts of a finished job for exactly this circuit, or None: never submits and never falls back.
+
+    The entry in results/sv1_counts/<tag>.json is used only when replay_mismatch accepts it (same circuit
+    fingerprint, SV1 device, shot count and a job id). Returns the counts in Qiskit order with the markers stripped
+    and sets LAST_RUN to the SV1 job, so make_row fills the device, job id and credits of that job."""
+    qc = prepared(circuit)
+    if not _cache_file(tag).exists():
+        print(f"no saved SV1 counts for {tag}; no SV1 row")
+        return None
+    saved = json.loads(_cache_file(tag).read_text())
+    why = replay_mismatch(saved, qc, shots)
+    if why:
+        print(f"saved SV1 counts for {tag} not replayed: {why}; no SV1 row")
+        return None
+    LAST_RUN.update(source="sv1-replay", device=saved["device"], job_id=saved["job_id"], credits=saved.get("credits"))
+    print(f"replaying SV1 counts for {tag}, job {saved['job_id']} (no new job, no credits)")
+    return strip_marker_safe(saved["counts"])
+
+
+def run_on_qbraid(circuit, shots=1000, tag=None, replay=None):
+    """Prepare the circuit, get counts (saved SV1 run, new SV1 job, or local Aer) and strip the markers.
+
+    replay=None follows REPLAY_SV1; replay=False never reuses saved SV1 counts (used for the local rows, so a local
+    row stays a local run and the SV1 replay gets its own row)."""
     qc = prepared(circuit)
     raw = None
-    if REPLAY_SV1 and tag and _cache_file(tag).exists():
+    if (REPLAY_SV1 if replay is None else replay) and tag and _cache_file(tag).exists():
         saved = json.loads(_cache_file(tag).read_text())
         why = replay_mismatch(saved, qc, shots)
         if why:

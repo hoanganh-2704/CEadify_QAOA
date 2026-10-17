@@ -19,6 +19,34 @@ ROW_KEYS = ["id", "level", "puzzle", "N", "encoding", "algorithm", "device", "qu
             "credits", "notes"]
 
 
+# Human-readable experiment names; the short code (C2, G1, ...) stays in parentheses for traceability.
+# "rounds" = QAOA layers p, "steps" = Grover iterations K: both are the depth of the circuit.
+_W = "4-cube warm-up (front/back only)"
+_T = "4-cube tower"
+_B = "Bonus N-cube tower"        # N is replaced by the row's number of cubes
+LABELS = {
+    "W1p1": f"{_W}, QAOA 1 round", "W1": f"{_W}, QAOA 2 rounds",
+    "C0": f"{_T}, QAOA 3 rounds", "C1": f"{_T}, QAOA 12 rounds", "C2": f"{_T}, QAOA 24 rounds",
+    "C3": f"{_T}, QAOA 24 rounds, angles from another puzzle", "C4": f"{_T}, QAOA 3 rounds, CVaR-trained angles",
+    "C5": f"{_T}, QAOA 24 rounds, 2-number ramp (tuned on N=4)",
+    "G0": f"{_T}, Grover 5 steps", "G1": f"{_T}, Grover 10 steps", "G2": f"{_T}, Grover 19 steps",
+    "B1": f"{_T}, starter 24-qubit encoding, QAOA 3 rounds",
+    **{f"N{n}": f"{_B}, QAOA 24 rounds (4-cube angles)" for n in (5, 6, 7, 8)},
+}
+# the QPU job tags of scripts/run_qpu.py ("G1" there is Grover with 1 step, not the simulator row G1 = 10 steps)
+QPU_LABELS = {"W1p1": f"{_W}, QAOA 1 round", "G1": f"{_T}, Grover 1 step", "Cc1": f"{_T}, QAOA 1 round",
+              "G1N5": f"{_B}, Grover 1 step", "C2": LABELS["C2"], "G2": LABELS["G2"], "N5": LABELS["N5"]}
+
+
+def label_of(row):
+    """The human-readable experiment name of a row (stored label, else looked up from its id)."""
+    if row.get("label"):
+        return row["label"]
+    rid = row["id"]
+    label = QPU_LABELS.get(rid[:-4], rid) if rid.endswith("-QPU") else LABELS.get(rid.split("-")[0], rid)
+    return label.replace("N-cube", f"{row['N']}-cube")
+
+
 # ---------------------------------------------------------------- success rates
 
 def success_rate(counts, decoder, valid=None):
@@ -92,17 +120,84 @@ def _cell_p(row):
     return text
 
 
+def _cell_job(row):
+    """qBraid job ID cell: the job id and its cost in credits when known, or 'none (local run)'."""
+    if not row.get("job_id"):
+        return "none (local run)"
+    if row.get("credits") is None:
+        return row["job_id"]
+    return f"{row['job_id']} ({row['credits']:g} credits)"
+
+
 def results_table(rows):
     """Markdown table with the ten GRADING.md columns, one line per row."""
     lines = [GRADING_HEADER, GRADING_RULE]
     for r in rows:
-        cells = [f"{r['id']}: {r['puzzle']}", f"{r['encoding']}, {r['algorithm']}", r["device"],
+        cells = [f"{label_of(r)} ({r['id']}): {r['puzzle']}", f"{r['encoding']}, {r['algorithm']}", r["device"],
                  f"{r['qubits']} ({r['qubits_note']})", f"{r['cx']:,}", f"{r['depth']:,}", f"{r['shots']:,}",
-                 _cell_p(r), f"{r['baseline_bits']:.2e} (any bitstring) / {r['baseline_subspace']:.2e} "
-                 + ("(W x W start subspace)" if r["encoding"].startswith("starter one-hot") else "(valid codes)"),
-                 r["job_id"] or "none (local run)"]
+                 _cell_p(r), f"{r['baseline_bits']:.2e} (any {r['qubits'] - 2}-bit string) / {r['baseline_subspace']:.2e} "
+                 + ("(W x W start subspace)" if r["encoding"].startswith("starter one-hot") else "(random valid placements)"),
+                 _cell_job(r)]
         lines.append("| " + " | ".join(str(c) for c in cells) + " |")
     return "\n".join(lines)
+
+
+def _pct(x, se=None):
+    """A probability as a percent with sensible digits: 2 decimals above 99 % (so 99.85 % is not shown as 99.9 %),
+    two significant figures for tiny baselines, 1 decimal otherwise; '+- se' in the same units when given."""
+    if x is None:
+        return ""
+    v = 100 * x
+    if v == 0 or v >= 1:
+        d = 2 if v >= 99 or (se is not None and 0 < 100 * se < 0.1) else 1
+        txt = f"{v:.{d}f}"
+    else:
+        d = None
+        txt = f"{v:.2g}"
+    if se is not None:
+        txt += f" +- {100 * se:.{d if d is not None else 2}f}"
+    return txt + " %"
+
+
+def comparison_table(rows):
+    """One line per circuit: name, two-qubit gates, noiseless (exact) P, qBraid SV1 P, Rigetti QPU P, random guess.
+    Simulator, SV1 and QPU rows of the same circuit (same name and N) share a line; missing runs stay blank."""
+    lines = ["| Experiment | Two-qubit gates | Perfect simulator | qBraid SV1 | Rigetti QPU | Random valid placements "
+             "| Any 12-bit string |", "|---|---|---|---|---|---|---|"]
+    groups = {}
+    for r in rows:
+        key = (label_of(r), int(r["N"]))
+        g = groups.setdefault(key, {"ids": [], "cx": r["cx"], "exact": None, "sv1": None, "qpu": None,
+                                    "random": r["baseline_subspace"], "random_bits": r["baseline_bits"],
+                                    "bits": r["qubits"] - 2})
+        g["ids"].append(r["id"])
+        if r["id"].endswith("-SV1"):
+            g["sv1"] = r
+        elif r["id"].endswith("-QPU"):
+            g["qpu"] = r
+        if g["exact"] is None and r.get("P_exact") is not None:
+            g["exact"] = r["P_exact"]
+    for (label, n), g in groups.items():
+        name = label
+        sv1 = "" if g["sv1"] is None else _pct(g["sv1"]["P"], g["sv1"]["P_se"])
+        q = g["qpu"]
+        qpu = "" if q is None else (f"{_pct(q['P'], q['P_se'])} ({q['n_good']}/{q['shots']}); valid readings "
+                                    + _pct(1 - (q["n_invalid"] or 0) / q["shots"]))
+        lines.append(f"| {name} ({', '.join(g['ids'])}) | {g['cx']:,} | {_pct(g['exact'])} | {sv1} | {qpu} "
+                     f"| {_pct(g['random'])} | {_pct(g['random_bits'])}"
+                     + ("" if g["bits"] == 12 else f" ({g['bits']}-bit)") + " |")
+    return "\n".join(lines)
+
+
+README_IDS = ["C0", "C1", "C2", "C2-SV1", "C2-QPU", "G0", "G1", "G1-QPU", "G2", "G2-SV1", "G2-QPU", "B1",
+              "N5", "N5-SV1", "G1N5-QPU", "N6", "N7", "N8"]
+
+
+def readme_rows(rows):
+    """The rows shown in the README tables: the N = 4 tower rows, the Bonus rows and their SV1 / QPU twins
+    (the warm-up and the C3-C5 variants stay in the notebook and results/results_table_all.md)."""
+    keep = [r for r in rows if r["id"] in README_IDS]
+    return sorted(keep, key=lambda r: README_IDS.index(r["id"]))
 
 
 def _jsonable(x):

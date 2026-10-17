@@ -17,3 +17,9 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+# Not part of the submission: deck screenshots/exports (slides.pdf at the root is the deliverable), logs, scratch
+presentation/export/
+*.log
+scratch/
+report.pdf

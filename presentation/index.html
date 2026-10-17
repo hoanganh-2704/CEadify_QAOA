@@ -1,0 +1,319 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instant Insanity on a Quantum Computer</title>
+<style>
+/* Light, Arial, 16:9 deck. Visual language: navy centred titles, thin blue rule, pastel lanes, grey footer. */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#c9d0da;overflow:hidden;font-family:Arial,Helvetica,"Liberation Sans",sans-serif;-webkit-font-smoothing:antialiased}
+:root{
+ --ink:#1a1a1a; --ink2:#3d4350; --ink3:#5f6673; --line:#d8dde6;
+ --navy:#1f3b73; --rule:#a9c4e4; --blue:#1f77b4; --red:#c0392b; --green:#2e8b57; --amber:#9a6412;
+ --laneA:#dbe8f6; --laneAb:#1f77b4; --laneB:#f9e0de; --laneBb:#c0392b; --laneC:#dff0d8; --laneCb:#2e8b57; --fuse:#fff3cd; --fuseb:#b7791f;
+ --cR:#d64541; --cG:#2e9e5b; --cB:#3b7fe0; --cY:#e3b100;
+ --s:1;
+}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#c9d0da}
+.slide{position:absolute;width:177.78vh;height:100vh;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--s));
+ display:none;flex-direction:column;overflow:hidden;background:#fff;color:var(--ink)}
+.slide.on{display:flex}
+.hdr{position:absolute;top:0;left:0;right:0;height:11vh;display:flex;align-items:center;justify-content:center;padding:0 8%}
+.hdr h2{font-size:4.5vh;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.01em;text-align:center;line-height:1.1}
+.hdr:after{content:"";position:absolute;left:0;right:0;bottom:0;height:.5vh;background:linear-gradient(90deg,#1f3b73,#a9c4e4)}
+.foot{position:absolute;bottom:0;left:0;right:0;height:6vh;display:flex;align-items:center;padding:0 2.6%;font-size:1.8vh;color:var(--ink3);border-top:.12vh solid var(--line)}
+.foot .n{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy)}
+.body{position:absolute;top:11.5vh;bottom:6vh;left:0;right:0;padding:2vh 3.4% 1.4vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.body.top{justify-content:flex-start}
+h1{font-size:7.4vh;line-height:1.06;font-weight:700;color:var(--navy)}
+h3{font-size:3vh;font-weight:700;color:var(--ink)}
+.sub{font-size:3vh;color:var(--ink2);line-height:1.35}
+.lead{font-size:3vh;line-height:1.4;color:var(--ink)}
+.punch{font-size:2.9vh;color:var(--navy);font-weight:700;line-height:1.3;margin-top:2vh}
+.small{font-size:2.1vh;color:var(--ink2);line-height:1.4}
+.cite{font-size:1.7vh;color:var(--ink3);line-height:1.35}
+.blue{color:var(--blue)} .red{color:var(--red)} .green{color:var(--green)} .amber{color:var(--amber)} .navy{color:var(--navy)} .muted{color:var(--ink3)}
+.mono{font-family:Consolas,"Liberation Mono",Menlo,monospace}
+b{font-weight:700}
+ul.b{list-style:none;font-size:3.2vh;line-height:1.38;color:var(--ink)}
+ul.b li{position:relative;padding-left:2.8vh;margin:1vh 0}
+ul.b li:before{content:"\25AA";position:absolute;left:0;top:0;color:var(--navy)}
+ul.b.sm{font-size:2.9vh} ul.b.sm li{margin:1vh 0}
+.cols{display:grid;gap:2vh 2.6%;align-items:stretch;min-height:0}
+.cols.c2{grid-template-columns:1fr 1fr}
+.cols.c3{grid-template-columns:1fr 1fr 1fr}
+.cols.l{grid-template-columns:1.25fr 1fr}
+.cols.r{grid-template-columns:1fr 1.25fr}
+.cols.mid{align-items:center}
+.card{border:.25vh solid var(--line);border-radius:1.2vh;background:#fafbfd;padding:2.2vh 2.4vh;font-size:3vh;line-height:1.38}
+.card h3{font-size:3.3vh;margin-bottom:1vh}
+.card .tag{font-size:2.1vh;font-style:italic;color:var(--ink3);margin-bottom:.6vh}
+.card.A{background:var(--laneA);border-color:var(--laneAb)} .card.A h3{color:var(--laneAb)}
+.card.B{background:var(--laneB);border-color:var(--laneBb)} .card.B h3{color:var(--laneBb)}
+.card.C{background:var(--laneC);border-color:var(--laneCb)} .card.C h3{color:var(--laneCb)}
+.card.F{background:var(--fuse);border-color:var(--fuseb)} .card.F h3{color:var(--amber)}
+.card.plain{background:#fff}
+.card ul.b{font-size:2.9vh} .card ul.b li{margin:.9vh 0}
+.big{font-size:6.4vh;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat{text-align:left}
+.stat .lbl{font-size:2.3vh;color:var(--ink2);margin-top:.8vh;line-height:1.3}
+table.t{border-collapse:collapse;width:100%;font-size:2.9vh}
+table.t th,table.t td{padding:1.1vh 1vh;border-bottom:.15vh solid var(--line);text-align:left;vertical-align:middle}
+table.t th{color:var(--navy);font-weight:700;border-bottom:.3vh solid var(--rule);font-size:2.5vh}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hi td{background:#eaf2fd;font-weight:700}
+table.t tr.dim td{color:var(--ink3)}
+.pill{display:inline-block;border-radius:99vh;padding:.4vh 1.4vh;font-size:2vh;font-weight:700;background:#fff;border:.2vh solid var(--line);color:var(--ink2)}
+.pill.pend{background:var(--fuse);border-color:var(--fuseb);color:var(--amber)}
+.pill.ok{background:var(--laneC);border-color:var(--laneCb);color:var(--green)}
+.pill.no{background:#f3f4f6;border-color:#c5cad3;color:var(--ink3)}
+/* tower (CSS) */
+.tower{display:grid;grid-template-columns:repeat(4,7.2vh);gap:.8vh;justify-content:center}
+.tower .h{font-size:2vh;color:var(--ink3);text-align:center}
+.tower .f{height:7.2vh;border-radius:.6vh;color:#fff;font-weight:700;font-size:3vh;display:flex;align-items:center;justify-content:center}
+.R{background:var(--cR)} .G{background:var(--cG)} .B{background:var(--cB)} .Y{background:var(--cY)}
+/* code table */
+.codes{display:grid;grid-template-columns:auto auto 1fr;gap:.9vh 2vh;font-size:3vh;align-items:center}
+.codes .k{font-family:Consolas,"Liberation Mono",Menlo,monospace;font-weight:700;font-size:3.2vh;color:var(--navy)}
+.codes .bad{color:#9aa1ad;font-weight:400}
+.chip{display:inline-flex;align-items:center;gap:.3vh;font-weight:700;font-size:2.6vh;vertical-align:middle}
+.chip i{display:inline-block;width:3.2vh;height:3.2vh;border-radius:.5vh;color:#fff;font-style:normal;font-size:2vh;line-height:3.2vh;text-align:center}
+.flow{display:flex;align-items:center;gap:1vh;flex-wrap:nowrap;margin:1vh 0}
+.flow .bx{border:.22vh solid currentColor;border-radius:.9vh;padding:.8vh 1.3vh;font-size:2.6vh;font-weight:700;background:#fff;white-space:nowrap}
+.flow .ar{font-size:2.8vh;color:var(--ink3);white-space:nowrap}
+.crop{overflow:hidden;width:100%;background:#fff;border-radius:.8vh;border:.15vh solid var(--line)}
+.crop img{width:100%;display:block}
+.big3{font-size:3vh;line-height:1.35}
+.win{font-weight:700;font-size:2.8vh;margin-top:auto}
+table.res{font-size:3vh} table.res td{padding:1.15vh 1vh} table.res small{font-size:1.9vh;color:var(--ink3);font-weight:400}
+table.t td.na{color:#9aa1ad;font-size:2.2vh}
+table.t tr.sep td{border-top:.45vh solid var(--rule)}
+.lane{display:flex;flex-direction:column;gap:1.2vh;min-height:40vh}
+.lane .big{font-size:8vh}
+.notes{display:none}
+#bar{position:fixed;left:0;bottom:0;height:4px;background:var(--blue);width:0;transition:width .3s;z-index:60}
+#help{position:fixed;left:14px;top:12px;z-index:70;font-size:12px;color:#555;background:rgba(255,255,255,.92);padding:6px 13px;border-radius:99px;box-shadow:0 2px 10px rgba(0,0,0,.15);display:none}
+#help.on{display:block}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:36vh;overflow:auto;background:#111827;color:#e5e7eb;padding:18px 26px 24px;font-size:17px;line-height:1.6;z-index:65;display:none}
+#notes.on{display:block}
+#notes h4{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#93c5fd;margin-bottom:7px}
+@media print{#bar,#help,#notes{display:none!important}}
+</style></head><body>
+<div id="stage">
+
+<!-- 1 Title + hook -->
+<section class="slide" data-sec="30">
+ <img src="assets/hero_ai_tower_wide.png" alt="" style="position:absolute;right:0;top:0;height:100%;width:auto;opacity:.95">
+ <div class="body" style="padding-left:6%;padding-right:42%;top:0;justify-content:center">
+  <div class="cite" style="font-size:2.1vh;letter-spacing:.25em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:2vh">qBraid challenge &middot; Qiskit Fall Fest CT 2026</div>
+  <h1>Instant Insanity on a quantum computer</h1>
+  <div class="sub" style="margin-top:2.2vh">Stack 4 cubes so every side of the tower shows red, green, blue and yellow exactly once.</div>
+  <div style="display:flex;gap:5vh;margin-top:4.5vh;align-items:flex-start">
+   <div class="stat"><div class="big navy">331,776</div><div class="lbl">ways to stack the cubes</div></div>
+   <div class="stat"><div class="big red">8</div><div class="lbl">of them work<br>(one tower, 8 views)</div></div>
+   <div class="stat"><div class="big green">12</div><div class="lbl">qubits in our search</div></div>
+  </div>
+  <div style="margin-top:4.5vh;font-size:2.7vh;font-weight:700">Kiarash Naghavi Khanghah, Luis A. Mendez, Hoang Anh Nguyen</div>
+  <div class="small" style="margin-top:.6vh">Core and bonus levels (N cubes, N colours)</div>
+ </div>
+ <div class="cite" style="position:absolute;right:2.6%;bottom:7vh;text-align:right">Decorative illustration generated with Google Gemini 3 Pro Image (Nano Banana Pro); not the real solution.</div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">1 / 7</span></div>
+ <aside class="notes">Instant Insanity is a 1960s toy: four cubes with coloured faces, and you must stack them so each of the four long sides shows all four colours once. There are 331,776 ways to stack them and only 8 work, which are really one tower seen in 8 rotated or flipped positions. We asked how well a small quantum search, on 12 qubits, can find that tower, and what it costs.</aside>
+</section>
+
+<!-- 2 Puzzle as a graph -->
+<section class="slide" data-sec="35">
+ <div class="hdr"><h2>The puzzle as a graph</h2></div>
+ <div class="body">
+  <div style="display:flex;justify-content:center"><img src="assets/graph_two_factors.png" alt="Colour graph of the 4 cubes and the two picks of the solution" style="height:54vh;width:auto"></div>
+  <div class="cols c3" style="margin-top:1.8vh">
+   <div class="card plain big3"><b class="navy">1 line = 1 pair of opposite faces.</b><br>Each cube has <b>6 possible placements</b>.</div>
+   <div class="card plain big3"><b class="navy">6<sup>4</sup> = 1,296 cases</b><br>instead of 331,776 stackings.</div>
+   <div class="card C big3"><b class="green">2 cases solve it:</b><br>the tower and its quarter turn.</div>
+  </div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">2 / 7</span></div>
+ <aside class="notes">Each colour is a dot and each pair of opposite faces on a cube is a line, so 4 cubes give 12 lines. A cube only matters through which pair faces front/back and which faces left/right, so it has 6 possible placements and the puzzle has 1,296 cases. The middle and right panels are the real answer: each colour touches exactly two chosen lines.</aside>
+</section>
+
+<!-- 3 Encoding -->
+<section class="slide" data-sec="35">
+ <div class="hdr"><h2>Encoding: 3 qubits per cube</h2></div>
+ <div class="body">
+  <div class="cols r mid">
+   <div class="card plain">
+    <h3>A cube's placement = a number 0 to 5</h3>
+    <div class="tag">cube 1 has pairs A = GR, B = BR, C = GY</div>
+    <div class="codes" id="codes"></div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:2.2vh">
+    <div class="card A"><div class="big" style="font-size:7vh;color:var(--blue)">12 qubits</div><div style="margin-top:.8vh">for 4 cubes. The starter's one-hot encoding needs 24.</div></div>
+    <div class="card plain"><div class="big" style="font-size:7vh;color:var(--ink3)">0.15 %</div><div style="margin-top:.8vh">chance that a random guess is the tower. This is the bar to beat.</div></div>
+    <div class="card C"><h3 style="margin:0">Checked first</h3><div>The rules' cost is zero on exactly 2 of the 4,096 bit strings: the two answers.</div></div>
+   </div>
+  </div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">3 / 7</span></div>
+ <aside class="notes">We write each cube's position, a number from 0 to 5, in 3 qubits, so 4 cubes need 12 qubits instead of the starter's 24. Codes 6 and 7 are not placements and our circuits never produce them. A random placement of every cube finds the tower 0.15 % of the time (0.049 % for any 12 random bits), and before any quantum run we checked that our cost function is zero only on the two answers.</aside>
+</section>
+
+<!-- 4 Algorithms -->
+<section class="slide" data-sec="55">
+ <div class="hdr"><h2>Two quantum searches, side by side</h2></div>
+ <div class="body">
+  <div class="cols c2">
+   <div class="card A" style="display:flex;flex-direction:column;gap:1.2vh">
+    <h3 style="margin:0">QAOA</h3>
+    <div class="crop" style="aspect-ratio:4.55"><img src="assets/circuits_at_a_glance.png" alt="QAOA circuit" style="margin-top:-0.3%"></div>
+    <div>A <b>round</b> = score each combination by the rules it breaks, then shuffle each cube among its 6 placements.</div>
+    <div class="win blue">Generalizes: the same angles work for 5 to 8 cubes.</div>
+   </div>
+   <div class="card B" style="display:flex;flex-direction:column;gap:1.2vh">
+    <h3 style="margin:0">Grover</h3>
+    <div class="crop" style="aspect-ratio:4.25"><img src="assets/circuits_at_a_glance.png" alt="Grover circuit" style="margin-top:-32.3%"></div>
+    <div>A <b>step</b> = a checker built only from the rules marks the solutions, then an amplifier boosts them.</div>
+    <div class="win red">Wins for 4 cubes: fewer gates, higher success.</div>
+   </div>
+  </div>
+  <div class="punch" style="text-align:center;margin-top:2.2vh;font-size:3vh">More rounds or steps = a deeper circuit = higher success on a perfect machine.</div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">4 / 7</span></div>
+ <aside class="notes">QAOA repeats rounds: a cost step that marks each combination by how many rules it breaks, then a mixer that shuffles each cube only between its 6 possible placements; 24 rounds reach 98.5 %, and its angles were trained classically on the 4-cube puzzle. Grover repeats steps: a checker generated from the rules alone flips the sign of solved towers and an amplifier boosts them; 19 steps reach 99.85 %, and one idle helper qubit cut its circuit from 25,666 to 3,987 two-qubit gates. Grover needs to know there are 2 answers, which we get from a classical count.</aside>
+</section>
+
+<!-- 5 Curves -->
+<section class="slide" data-sec="45">
+ <div class="hdr"><h2>More rounds or steps, more success</h2></div>
+ <div class="body">
+  <div class="cols c2 mid">
+   <div><svg id="chartReps" viewBox="0 0 800 560" style="width:100%;height:auto"></svg></div>
+   <div><svg id="chartGates" viewBox="0 0 800 560" style="width:100%;height:auto"></svg></div>
+  </div>
+  <div class="punch" style="text-align:center;margin-top:1vh;font-size:3vh">Grover reaches 99.85 % in 19 steps; QAOA reaches 98.5 % in 24 rounds. Random guess: 0.15 %.</div>
+  <div class="cite" style="text-align:center;font-size:1.9vh">4-cube tower, exact noiseless probabilities; two-qubit gates counted after transpiling.</div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">5 / 7</span></div>
+ <aside class="notes">Each extra round or step makes the circuit deeper and, on a perfect machine, raises the chance of reading the solved tower. Grover climbs faster and reaches 99.85 % after 19 steps; QAOA reaches 98.5 % after 24 rounds. On the right the same curves are plotted against the number of two-qubit gates: at every budget Grover is ahead on the 4-cube puzzle.</aside>
+</section>
+
+<!-- 6 Results -->
+<section class="slide" data-sec="50">
+ <div class="hdr"><h2>Results: simulator, cloud and real hardware</h2></div>
+ <div class="body" style="padding-left:2.4%;padding-right:2.4%">
+  <table class="t res">
+   <thead><tr><th>Experiment</th><th class="num">two-qubit<br>gates</th><th class="num">Perfect<br>simulator</th><th class="num">qBraid<br>SV1</th><th class="num">Rigetti<br>QPU</th><th class="num">Random<br>guess</th></tr></thead>
+   <tbody>
+    <tr class="hi"><td>4-cube tower, Grover 19 steps</td><td class="num">3,987</td><td class="num">99.85 %</td><td class="num">99.95 % <small>&plusmn; 0.04</small></td><td class="num na">&ndash;</td><td class="num">0.15 %</td></tr>
+    <tr class="hi"><td>4-cube tower, QAOA 24 rounds</td><td class="num">8,648</td><td class="num">98.5 %</td><td class="num">98.6 % <small>&plusmn; 0.2</small></td><td class="num na">&ndash;</td><td class="num">0.15 %</td></tr>
+    <tr><td>Bonus 5-cube tower, QAOA 24 rounds</td><td class="num">14,266</td><td class="num">47.9 %</td><td class="num">46.6 % <small>&plusmn; 1.1</small></td><td class="num na">&ndash;</td><td class="num">0.026 %</td></tr>
+    <tr class="sep"><td>4-cube tower, Grover 1 step</td><td class="num">225</td><td class="num">1.4 %</td><td class="num na">&ndash;</td><td class="num"><b class="red">0 / 500</b></td><td class="num">0.15 %</td></tr>
+    <tr><td>Bonus 5-cube tower, Grover 1 step</td><td class="num">287</td><td class="num">0.23 %</td><td class="num na">&ndash;</td><td class="num"><b class="red">0 / 500</b></td><td class="num">0.026 %</td></tr>
+   </tbody>
+  </table>
+  <div class="punch" style="text-align:center;margin-top:2.4vh;font-size:3vh">Works on a perfect simulator and on qBraid SV1;<br>today's QPU loses the signal even at 225 two-qubit gates.</div>
+  <div class="cite" style="text-align:center;margin-top:1vh;font-size:1.9vh">Deeper circuits (QAOA 24 rounds, 8,648 gates) were rejected by the QPU. &plusmn; = one standard error. Every success re-checked by <span class="mono">solves()</span>. Job IDs in <span class="mono">results/jobs.json</span>.</div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">6 / 7</span></div>
+ <aside class="notes">On a perfect simulator and on qBraid's SV1 cloud simulator the deep circuits find the tower almost every time: Grover 99.95 % and QAOA 98.6 % on SV1, and 46.6 % for the 5-cube bonus puzzle, against random-guess rates of 0.15 % and 0.026 %. On the real Rigetti quantum computer we could only run one-step Grover circuits of about 250 two-qubit gates, and they gave zero correct towers out of 500: the noise erases the signal. Deeper circuits were rejected by the QPU.</aside>
+</section>
+
+<!-- 7 Bonus -->
+<section class="slide" data-sec="35">
+ <div class="hdr"><h2>Bonus: 4 to 8 cubes with the same angles</h2></div>
+ <div class="body">
+  <div class="cols mid" style="grid-template-columns:1.6fr 1fr">
+   <div><svg id="chartBonus" viewBox="0 0 900 560" style="width:100%;height:auto"></svg></div>
+   <div style="display:flex;flex-direction:column;gap:2vh">
+    <div class="card A big3"><b class="blue">Still works:</b> 17 to 48 % success at 5 to 8 cubes, with no retraining.</div>
+    <div class="card plain big3"><b class="navy">Grows:</b> 3 qubits and 5,600 to 10,600 two-qubit gates per extra cube.</div>
+    <div class="card F big3"><b class="amber">Honest:</b> brute force is still faster. No speedup claimed.</div>
+   </div>
+  </div>
+  <div class="punch" style="text-align:center;margin-top:1.6vh;font-size:3vh">Next: quantum counting, so Grover finds the number of answers itself.</div>
+ </div>
+ <div class="foot"><span>Instant Insanity on a quantum computer</span><span class="n">7 / 7</span></div>
+ <aside class="notes">For the bonus we generated 5 to 8 cube puzzles with the starter's make_puzzle and seeds 16, 86, 68 and 4, each with exactly one tower. We did not retrain: the 24-round angles from the 4-cube puzzle still give 17 to 48 % exact success, while a random guess drops to about one in a million at 8 cubes. A classical brute force is still much faster at these sizes, so this shows the method transfers, not that it is faster. Next we would add quantum counting, so Grover finds the number of answers itself instead of taking it from a classical count; thank you.</aside>
+</section>
+
+
+
+</div>
+<div id="bar"></div>
+<div id="help">&larr; &rarr; or click to navigate &middot; <b>N</b> notes &middot; <b>F</b> fullscreen &middot; <b>H</b> hide help</div>
+<div id="notes"><h4>Speaker notes &middot; this slide</h4><div id="notesbody"></div></div>
+<script>
+/* ---------- slide 3: code table for cube 1 ---------- */
+(function(){
+  const el=document.getElementById('codes'); if(!el) return;
+  const pairs=['GR','BR','GY'], name=['A','B','C'];
+  const CH=[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]];
+  const chip=p=>'<span class="chip">'+[...p].map(c=>'<i class="'+c+'">'+c+'</i>').join('')+'</span>';
+  let h='<div class="small" style="font-weight:700">bits</div><div class="small" style="font-weight:700">code</div><div class="small" style="font-weight:700">front/back &nbsp; left/right &nbsp; hidden</div>';
+  CH.forEach(([f,l],k)=>{ const hid=3-f-l;
+    h+=`<div class="k">${k.toString(2).padStart(3,'0')}</div><div style="font-weight:700">${k}</div><div>${name[f]} ${chip(pairs[f])} &nbsp;&nbsp; ${name[l]} ${chip(pairs[l])} &nbsp;&nbsp; <span class="muted">${name[hid]}</span></div>`;});
+  ['110','111'].forEach((b,j)=>{h+=`<div class="k bad">${b}</div><div class="bad">${6+j}</div><div class="bad">not a placement, never produced</div>`;});
+  el.innerHTML=h;
+})();
+
+/* ---------- slide 5 and 7 charts (exact noiseless values from assets/chart_p_vs_cx_data.json and results.json) ---------- */
+(function(){
+  const Q=[[1, 368, 0.01096], [2, 728, 0.02738], [3, 1088, 0.04773], [4, 1448, 0.08816], [5, 1808, 0.14193], [6, 2168, 0.21195], [7, 2528, 0.32352], [8, 2888, 0.41869], [9, 3248, 0.50165], [10, 3608, 0.57904], [11, 3968, 0.66084], [12, 4328, 0.72936], [13, 4688, 0.78395], [14, 5048, 0.83019], [15, 5408, 0.86778], [16, 5768, 0.89414], [17, 6128, 0.91655], [18, 6488, 0.93371], [19, 6848, 0.9505], [20, 7208, 0.96407], [21, 7568, 0.97265], [22, 7928, 0.97884], [23, 8288, 0.98265], [24, 8648, 0.98544]], G=[[1, 225, 0.01383], [2, 434, 0.03811], [3, 643, 0.07377], [4, 852, 0.11994], [5, 1061, 0.17548], [6, 1270, 0.23902], [7, 1479, 0.30899], [8, 1688, 0.38367], [9, 1897, 0.46122], [10, 2106, 0.53973], [11, 2315, 0.61726], [12, 2524, 0.69189], [13, 2733, 0.7618], [14, 2942, 0.82525], [15, 3151, 0.88068], [16, 3360, 0.92673], [17, 3569, 0.96226], [18, 3778, 0.98639], [19, 3987, 0.99853]];
+  const F='font-family="Arial"';
+  function chart(id, xmax, xi, xlabel, ticks, title){
+    const svg=document.getElementById(id); if(!svg) return;
+    const x0=100,x1=770,y0=450,y1=60, X=v=>x0+(x1-x0)*v/xmax, Y=v=>y0-(y0-y1)*v;
+    let s=`<text x="${(x0+x1)/2}" y="32" text-anchor="middle" font-size="30" font-weight="700" fill="#1f3b73" ${F}>${title}</text>`;
+    [0,0.25,0.5,0.75,1].forEach(v=>{s+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e3e7ee" stroke-width="2"/><text x="${x0-12}" y="${Y(v)+9}" text-anchor="end" font-size="26" fill="#5f6673" ${F}>${v*100} %</text>`;});
+    ticks.forEach(t=>{s+=`<text x="${X(t)}" y="${y0+38}" text-anchor="middle" font-size="26" fill="#5f6673" ${F}>${t.toLocaleString('en-US')}</text>`;});
+    s+=`<line x1="${x0}" x2="${x1}" y1="${y0}" y2="${y0}" stroke="#5f6673" stroke-width="2"/>`;
+    s+=`<text x="${(x0+x1)/2}" y="${y0+82}" text-anchor="middle" font-size="28" fill="#1a1a1a" ${F}>${xlabel}</text>`;
+    s+=`<line x1="${x0}" x2="${x1}" y1="${Y(0.0015)}" y2="${Y(0.0015)}" stroke="#9aa1ad" stroke-width="3" stroke-dasharray="10 8"/><text x="${x1}" y="${Y(0.0015)-12}" text-anchor="end" font-size="24" fill="#5f6673" ${F}>random guess 0.15 %</text>`;
+    const pl=(d,c)=>`<polyline points="${d.map(r=>X(r[xi])+','+Y(r[2])).join(' ')}" fill="none" stroke="${c}" stroke-width="5"/>`+d.map(r=>`<circle cx="${X(r[xi])}" cy="${Y(r[2])}" r="5" fill="${c}"/>`).join('');
+    s+=pl(Q,'#1f77b4')+pl(G,'#c0392b');
+    const q=Q[Q.length-1], g=G[G.length-1];
+    const lx=xi===1?x0+360:x0+20, la=xi===1?0.42:0.93, lb=xi===1?0.30:0.81;
+    s+=`<rect x="${lx}" y="${Y(la)-14}" width="34" height="8" fill="#c0392b"/><text x="${lx+44}" y="${Y(la)}" font-size="28" font-weight="700" fill="#c0392b" ${F}>Grover (steps)</text>`;
+    s+=`<rect x="${lx}" y="${Y(lb)-14}" width="34" height="8" fill="#1f77b4"/><text x="${lx+44}" y="${Y(lb)}" font-size="28" font-weight="700" fill="#1f77b4" ${F}>QAOA (rounds)</text>`;
+    svg.innerHTML=s;
+  }
+  chart('chartReps', 24, 0, 'rounds (QAOA) or steps (Grover)', [0,5,10,15,20,24], 'Success vs repetitions');
+  chart('chartGates', 9000, 1, 'two-qubit gates', [0,3000,6000,9000], 'Success vs circuit size');
+  const svg=document.getElementById('chartBonus'); if(!svg) return;
+  const B=[[4,0.9854,14,8648],[5,0.4787,17,14266],[6,0.3690,20,22476],[7,0.1710,23,28142],[8,0.2841,26,38752]];
+  const x0=110,x1=880,y0=430,y1=95, bw=100, X=n=>x0+(x1-x0)*(n-3.5)/5, Y=v=>y0-(y0-y1)*v;
+  let s='';
+  [0,0.25,0.5,0.75,1].forEach(v=>{s+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e3e7ee" stroke-width="2"/><text x="${x0-12}" y="${Y(v)+9}" text-anchor="end" font-size="26" fill="#5f6673" ${F}>${v*100} %</text>`;});
+  B.forEach(([n,p,q,cx])=>{const c=n===4?'#1f3b73':'#1f77b4';
+    s+=`<rect x="${X(n)-bw/2}" y="${Y(p)}" width="${bw}" height="${y0-Y(p)}" fill="${c}" rx="6"/>`;
+    s+=`<text x="${X(n)}" y="${Y(p)-12}" text-anchor="middle" font-size="30" font-weight="700" fill="${c}" ${F}>${(p*100).toFixed(1)} %</text>`;
+    s+=`<text x="${X(n)}" y="${y0+36}" text-anchor="middle" font-size="28" font-weight="700" fill="#1a1a1a" ${F}>${n} cubes</text>`;
+    s+=`<text x="${X(n)}" y="${y0+68}" text-anchor="middle" font-size="22" fill="#5f6673" ${F}>${q} qubits</text>`;
+    s+=`<text x="${X(n)}" y="${y0+96}" text-anchor="middle" font-size="22" fill="#5f6673" ${F}>${(cx/1000).toFixed(1)}k gates</text>`;});
+  s+=`<line x1="${x0}" x2="${x1}" y1="${y0}" y2="${y0}" stroke="#5f6673" stroke-width="2"/>`;
+  s+=`<text x="${x0}" y="24" font-size="24" fill="#5f6673" ${F}>P(correct tower), exact noiseless, QAOA 24 rounds with the 4-cube angles</text>`;
+  svg.innerHTML=s;
+})();
+
+/* ---------- navigation ---------- */
+const slides=[...document.querySelectorAll('.slide')];
+let i=0;
+function show(n){
+  i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+  document.getElementById('bar').style.width=((i+1)/slides.length*100)+'%';
+  const nt=slides[i].querySelector('.notes');
+  document.getElementById('notesbody').textContent=nt?nt.textContent:'';
+  history.replaceState(null,'','#'+(i+1));
+}
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();show(i+1);}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(i-1);}
+  else if(e.key==='Home') show(0); else if(e.key==='End') show(slides.length-1);
+  else if(e.key==='n'||e.key==='N') document.getElementById('notes').classList.toggle('on');
+  else if(e.key==='h'||e.key==='H') document.getElementById('help').classList.toggle('on');
+  else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+});
+document.addEventListener('click',e=>{ if(e.target.closest('#notes')) return; show(i+(e.clientX>window.innerWidth*0.3?1:-1)); });
+function fitStage(){ const s=Math.min(1,window.innerWidth/(window.innerHeight*16/9)); document.documentElement.style.setProperty('--s',s); }
+window.addEventListener('resize',fitStage); fitStage();
+show(location.hash?(parseInt(location.hash.slice(1))-1||0):0);
+document.getElementById('help').classList.add('on'); setTimeout(()=>document.getElementById('help').classList.remove('on'),4000);
+</script></body></html>
