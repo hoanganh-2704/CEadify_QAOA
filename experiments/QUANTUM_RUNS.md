@@ -83,6 +83,7 @@ run could be inconclusive.
 | 1b | `aws:aws:sim:sv1`: N = 3 `make_puzzle(3, 0)`, p = 1, 1000 shots (the SV1 row to sit next to the IonQ row) | same | Approved by the team ("run it both in SV1 and then the QPU"); waiting on `submit_job` |
 | 2 | `aws:ionq:qpu:forte-enterprise-1` (36 qubits, all-to-all connectivity): N = 3, p = 1, the round-8 verified circuit, **100 shots** | 30 + 8 × 100 = **830 credits (≈ $8.30)**; queue 5 | **Approved by the team: 100 shots.** Runs after the SV1 jobs succeed; waiting on `submit_job` |
 | — | `rigetti:rigetti:qpu:cepheus-1-108q` | 12,000 credits/min (≈ $120/min) | Considered and set aside: time-billed, and its nearest-neighbour wiring adds SWAPs |
+| 3 | `aws:rigetti:qpu:cepheus-1-108q` (Rigetti via AWS) | 30 credits/task + 0.0425 credits/shot → 1000 shots = **72.5 credits (≈ $0.73)**; queue 1 | **Approved by the team ("use the cheapest QPU"), 1000 shots, sent.** This is the cheapest clearly priced online gate-model QPU in a full read-only price listing; the `openquantum:*` routes list no pricing, so they were avoided. No round-9 prediction covers it, because routing on the grid adds SWAPs, so expect a weaker signal than IonQ. |
 
 ## Run log
 
@@ -92,6 +93,8 @@ run could be inconclusive.
 | 2 | 2026-10-17 | `aws:aws:sim:sv1` | 1 (N = 3, `make_puzzle(3, 0)`) | 19 (18 + marker) | 200 (GRADING); file holds 215 | 1000 | `aws:aws:sim:sv1-d8ed-qjob-6ad3b0f638127b44c71ba0d6` | 0.375 | 1000/1000 (marker dropped 0) | 377 | **37.70%** (random post-selected 7.41%) | exact 36.38%; +1.3 pts, within 1σ (±1.5) ✅ |
 
 | 3 | 2026-10-17 | `aws:ionq:qpu:forte-enterprise-1` | 1 (N = 3) | 19 (18 + marker) | IonQ native (recompiled) | 100 | `aws:ionq:qpu:forte-enterprise-1-d8ed-qjob-6ad3b15c38127b44c71ba0ea` | est. 830 (charged on completion) | _queued, position 6_ | | | |
+
+| 4 | 2026-10-17 | `aws:rigetti:qpu:cepheus-1-108q` (second team account) | 1 (N = 3) | 19 (18 + marker) | Rigetti native after routing (nearest-neighbour grid adds SWAPs) | 1000 | `aws:rigetti:qpu:cepheus-1-108q-8876-qjob-6ad3b90e38127b44c71ba61e` | est. 72.5 | _initializing_ | | | |
 
 Raw counts and the full row: `results/qbraid_sv1_n3_p1.json`. Circuit:
 `results/hardware_n3_p1.qasm` (SHA-256 checked before sending).
