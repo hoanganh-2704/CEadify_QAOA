@@ -306,9 +306,67 @@ def round5():
     })
 
 
+# ---------------------------------------------------------------- round 6: depth sweep on N = 4
+
+ROUND6_SEEDS = (0, 1, 2)
+P_SWEEP = tuple(range(1, 11))
+
+
+def round6():
+    costs, solved = problem()
+    pairs = S.MIXERS["full"]
+    H = S.reduced_hamiltonian(S.CUBES, ROUND3_GAUGE)
+    start = S.grid_p1(costs, solved, pairs=pairs)
+    runs, train_s = [], {}
+    for seed in ROUND6_SEEDS:
+        t0 = time.perf_counter()
+        layers = S.train_layers(costs, solved, max(P_SWEEP), pairs,
+                                S.OBJECTIVES[ROUND4_OBJECTIVE],
+                                jitter_seed=seed, jitter=JITTER, start=start)
+        train_s[str(seed)] = time.perf_counter() - t0
+        for p, angles, avg, hit in layers:
+            runs.append({"seed": seed, "p": p, "p_solved": hit, "avg_cost": avg,
+                         "angles": angles.tolist()})
+        print(f"  seed {seed}: " + "  ".join(f"p{p}={hit:.2%}" for p, _, _, hit in layers)
+              + f"  ({train_s[str(seed)]:.0f}s)")
+
+    per_p, previous = {}, None
+    for p in P_SWEEP:
+        at_p = [r for r in runs if r["p"] == p]
+        ps = [r["p_solved"] for r in at_p]
+        median_run = sorted(at_p, key=lambda r: r["p_solved"])[len(at_p) // 2]
+        angles = np.array(median_run["angles"])
+        metrics = grading_metrics(S.tower_qaoa(S.CUBES, H, angles[:p], angles[p:], pairs))[1]
+        block = {"median": float(np.median(ps)), "min": min(ps), "max": max(ps),
+                 "circuit_angles_seed": median_run["seed"], **metrics}
+        if previous is not None:
+            block["added_cx"] = block["cx_grading"] - previous["cx_grading"]
+            block["added_p_median_points"] = 100 * (block["median"] - previous["median"])
+        per_p[str(p)] = previous = block
+        print(f"p={p:2d}  median {block['median']:.2%}  [{block['min']:.2%}, {block['max']:.2%}]"
+              f"  CX {block['cx_grading']}  depth {block['depth_grading']}")
+
+    round4 = {r["seed"]: np.array(r["angles"])
+              for r in json.loads((RESULTS / "round4.json").read_text())["runs"]}
+    drift = {str(seed): float(np.max(np.abs(np.array(next(
+        r["angles"] for r in runs if r["seed"] == seed and r["p"] == 7)) - round4[seed])))
+        for seed in ROUND6_SEEDS}
+    print("p=7 drift vs round4.json:", drift)
+    save("round6.json", {
+        "n": 4, "objective": ROUND4_OBJECTIVE, "eta": 1.0, "mixer": "full",
+        "hamiltonian": f"reduced_{ROUND3_GAUGE}", "jitter": JITTER,
+        "seeds": list(ROUND6_SEEDS), "p_values": list(P_SWEEP), "grid_start": list(start),
+        "maxiter_rule": "80 at p=1, 220 for p<5, 400 for p>=5 (unchanged)",
+        "train_s_per_seed_to_p10": train_s, "runs": runs, "per_p": per_p,
+        "p7_drift_vs_round4": drift,
+        "transpile_call": 'transpile(qc, basis_gates=["rz","sx","x","cx"])',
+        **S.random_baselines(solved),
+    })
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "5"
+    which = sys.argv[1] if len(sys.argv) > 1 else "6"
     if which == "1":
         round1("--no-aer" not in sys.argv)
     else:
-        {"2": round2, "3": round3, "4": round4, "5": round5}[which]()
+        {"2": round2, "3": round3, "4": round4, "5": round5, "6": round6}[which]()

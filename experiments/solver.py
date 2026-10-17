@@ -363,19 +363,28 @@ def train_layerwise(costs, solved, p_max=7, pairs=MIX_PAIRS, objective=objective
     """Notebook recipe: p=1 grid, then grow one layer at a time, repeating the last angles.
     `start` reuses a precomputed grid_p1 result. With jitter_seed set, N(0, jitter)
     noise is added to the p=1 start angles."""
+    layers = train_layers(costs, solved, p_max, pairs, objective, jitter_seed, jitter, start)
+    curve = [(p, avg, hit) for p, _, avg, hit in layers]
+    return layers[-1][1], curve
+
+
+def train_layers(costs, solved, p_max=7, pairs=MIX_PAIRS, objective=objective_average,
+                 jitter_seed=None, jitter=0.05, start=None):
+    """Same training as train_layerwise, but returns (p, angles, avg, P(solved)) for every
+    p on the way to p_max, so a depth sweep needs no retraining."""
     start = np.array(start if start is not None else grid_p1(costs, solved, pairs=pairs))
     if jitter_seed is not None:
         start = start + np.random.default_rng(jitter_seed).normal(0, jitter, 2)
     angles = train_fixed_p(costs, 1, start, 80, pairs, objective)
-    curve = [(1, *average_and_hit(qaoa_state(costs, angles[:1], angles[1:], pairs),
-                                  costs, solved))]
+    layers = [(1, angles, *average_and_hit(qaoa_state(costs, angles[:1], angles[1:], pairs),
+                                           costs, solved))]
     for p in range(2, p_max + 1):
         g, b = angles[: p - 1], angles[p - 1:]
         x0 = np.concatenate([g, [g[-1]], b, [b[-1]]])
         angles = train_fixed_p(costs, p, x0, 220 if p < 5 else 400, pairs, objective)
         state = qaoa_state(costs, angles[:p], angles[p:], pairs)
-        curve.append((p, *average_and_hit(state, costs, solved)))
-    return angles, curve
+        layers.append((p, angles, *average_and_hit(state, costs, solved)))
+    return layers
 
 
 # ---------------------------------------------------------------- circuit

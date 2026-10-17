@@ -52,7 +52,35 @@ results; executed top to bottom, 3.6 min, no errors):
 
 Not done, by design: η tuning, more studies, any qBraid/SV1 run.
 
-## Round 5: the same recipe on the 5-cube bonus puzzle (running)
+## Round 5: the same recipe on the 5-cube bonus puzzle ✅ accepted
+
+The student wrote `tests_round5.py` first (red: `1 failed, 4 errors`;
+green: `5 passed`). The orchestrator re-ran everything: classical suite
+32 passed; all suites 95 passed.
+
+| | N = 4 (round 4) | N = 5, `make_puzzle(5, 16)` |
+|---|---|---|
+| Qubits | 24 | 30 |
+| ZZ terms | 77 | 161 |
+| CX / depth (GRADING) | 1958 / 907 | 3354 / 1147 |
+| Exact P(solved), median [min, max] | 35.12% [35.11, 35.12] (seeds 0–4) | **9.33%** [9.33, 9.33] (seeds 0–2) |
+| Random legal pick / random bitstring | 0.154% / 1.2 × 10⁻⁷ | 0.0257% / 1.9 × 10⁻⁹ |
+| Gain over random legal pick | ≈ 228× | ≈ 363× |
+| Training per seed | 20–22 s | 24–26 s |
+| Brute force | < 1 s | 7.4 s (24⁵ orientations); 0.01 s (`count_answers`) |
+
+Both N = 5 answers match an independent `solves()` brute force and
+`count_answers`; the Hamiltonian is exact on all 7,776 picks. These are exact
+numbers only; Aer at 30 qubits needs about 16 GB. No speedup claim: brute
+force beats training one seed.
+
+**Course question owed:** why does P(solved) fall from 35% to 9% with one
+more cube? The answer should cover why no speedup is expected on NP-hard
+problems, and how a fixed p acts like a fixed annealing time.
+
+**Teacher's question for round 6:** on N = 4 with the accepted recipe
+(seeds 0–2), how do exact P(solved) and GRADING CX/depth change for
+p = 1…10? From what p does an extra layer stop paying for its CX?
 
 **Teacher's question:** if nothing in the accepted recipe changes, how does
 it do on `make_puzzle(5, 16)`? That is 30 qubits, the largest size under
