@@ -18,6 +18,18 @@ random 24-bit string 2/2²⁴ ≈ 1.2 × 10⁻⁷.
 |---|---|---|---|---|---|---|---|
 | 0 | Team notebook (`solution.ipynb`) | 26.35% | 25.5% | 24 | 4610 | 1503 | opt 1 |
 | 1 | Student harness reproduces round 0 | 26.35% | 25.5% | 24 | 4610 | 1503 | opt 1 |
+| 1 | Same circuit, GRADING transpile call | 26.35% | 25.5% | 24 | 4590 | 1683 | GRADING |
+| 2 | Reduced Hamiltonian (best gauge), round-1 angles | 26.35% | 25.5% | 24 | 1958 | 908 | GRADING |
+| 2 | Ring mixer (6 pairs), avg cost, 5 seeds | 7.67% median | 7.0% | 24 | 1454 | 760 | GRADING — rejected |
+| 2 | CVaR(0.1) objective, 3 seeds | 10.04% median | 10.2% | 24 | 1958 | 908 | GRADING — rejected |
+| **2** | **Gibbs objective (η=1) + full mixer + reduced H, 3 seeds** | **35.12% median** | **34.3%** | **24** | **1958** | **920** | **GRADING** |
+
+From round 2 on, the official CX/depth use the GRADING call
+`transpile(qc, basis_gates=["rz","sx","x","cx"])` so every team counts the
+same way.
+
+**Best so far vs the team notebook:** exact P(solved) 26.35% → 35.12%
+(+8.77 points, +33%), CX 4590 → 1958 (−57%), depth 1683 → 920 (−45%).
 
 ## Round 1
 
@@ -45,3 +57,30 @@ difference 5.6 × 10⁻¹⁶). 35 tests pass (23 classical + 12 quantum).
 **Assignment for round 2:** reduced Hamiltonian (required), full vs ring XY
 mixer over 5 seeds, then compare training objectives (average cost, CVaR,
 Gibbs) if time allows.
+
+## Round 2
+
+**Student did:**
+1. **Reduced Hamiltonian.** Rebuilt H from the cost tensor using the one-hot
+   identities, then picked the reference choice ("gauge") per cube that
+   gives the fewest ZZ terms (94 → 77). Exact on all 1,296 legal picks
+   (error 0). The full 24-qubit Aer statevector with round-1 angles matches
+   26.35% to under 3 × 10⁻¹⁶. CX 4590 → 1958 with the same success rate.
+2. **Mixer comparison (5 seeds each).** Ring mixer: 7.67% median vs full
+   mixer 26.37%, 18.7 points worse. Rejected, even though it saves about
+   500 CX.
+3. **Objective comparison (3 seeds each).** Average cost 26.37%,
+   CVaR(0.1) 10.04%, **Gibbs (η=1) 35.12%**. Gibbs's worst run beats
+   average cost's best run by 8.6 points, about 45× the seed spread.
+
+**Change vs round 1:** exact P +8.77 points (+33%); CX −2632 (−57%);
+depth −763 (−45%). 59 tests pass.
+
+**Caveats the student reported:** the seed spread is small because start
+angles were only jittered slightly, so other optima weren't explored; η
+was not tuned; the GRADING call gives deeper circuits than opt 1 (920 vs
+733).
+
+**What we learned:** the training objective mattered more than the mixer
+shape. Fewer two-qubit gates came from removing terms that are constant on
+the legal states, not from a sparser mixer.

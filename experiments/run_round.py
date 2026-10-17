@@ -192,11 +192,83 @@ def round2():
                          "round1_p": curve[-1][2], "equivalence": equivalence,
                          "mixers": mixers, "adopt_ring": adopt_ring,
                          "objectives": objectives})
+    round2_variants()
+
+
+# ---------------------------------------------------------------- round 2 scoreboard rows
+
+ROUND1_AER_P = 0.255   # results/round1.json: 255/1000 solved, 1000/1000 valid (opt-1 circuit)
+
+
+def variant(name, objective, mixer, hamiltonian, seeds, ps, crow, aer):
+    """One scoreboard row. `aer` is shot_metrics output, or None if no Aer run was made."""
+    return {"variant": name, "objective": objective, "mixer": mixer, "hamiltonian": hamiltonian,
+            "p": P_MAX, "seeds": list(seeds),
+            "exact_P_median": float(np.median(ps)), "exact_P_min": min(ps),
+            "exact_P_max": max(ps),
+            "aer_P": aer["p_solved"] if aer else None,
+            "valid_shot_fraction": aer["valid"] / aer["shots"] if aer else None,
+            "qubits": crow["qubits"], "cx_grading": crow["cx_grading"],
+            "depth_grading": crow["depth_grading"], "cx_opt1": crow["cx_opt1"],
+            "depth_opt1": crow["depth_opt1"]}
+
+
+def objective_variant(name, runs, H_best, cubes=S.CUBES):
+    """Circuit metrics and one Aer run (median seed) for an objective's trained angles."""
+    rep = median_run(runs)
+    _, compiled, crow = circuit_row(H_best, np.array(rep["angles"]))
+    aer = S.shot_metrics(S.aer_counts(compiled, SHOTS), cubes)
+    seeds = [r["seed"] for r in runs]
+    row = variant(f"{name} objective, full mixer, reduced H (best)", name, "full",
+                  "reduced_best", seeds, [r["p_solved"] for r in runs], crow, aer)
+    row["aer_seed"] = rep["seed"]
+    return row
+
+
+def round2_variants():
+    """Build the per-variant table from results/round2.json (no retraining)."""
+    data = json.loads((RESULTS / "round2.json").read_text())
+    eq = {row["variant"]: row for row in data["equivalence"]}
+    p1 = [data["round1_p"]]
+    rows = [
+        variant("round 1 baseline", "average", "full", "full", [], p1,
+                eq["full H (round 1)"], {"p_solved": ROUND1_AER_P, "valid": 1000, "shots": 1000}),
+        variant("reduced H ref 0, round-1 angles", "average", "full", "reduced_ref0", [], p1,
+                eq["reduced H, reference 0"], eq["reduced H, reference 0"]["aer"]),
+        variant("reduced H best gauge, round-1 angles", "average", "full", "reduced_best", [], p1,
+                eq["reduced H, best gauge"], eq["reduced H, best gauge"]["aer"]),
+    ]
+    for name, res in data["mixers"].items():
+        row = variant(f"{name} mixer, average, reduced H (best), jitter", "average", name,
+                      "reduced_best", [r["seed"] for r in res["runs"]],
+                      [r["p_solved"] for r in res["runs"]], res, res["aer_median_run"])
+        row["aer_seed"] = res["median_seed"]
+        rows.append(row)
+    H_best = S.reduced_hamiltonian(S.CUBES, "best")
+    for name in ("cvar0.1", "gibbs1"):
+        rows.append(objective_variant(name, data["objectives"][name]["runs"], H_best))
+        print(rows[-1])
+    data["variants"] = rows
+    save("round2.json", data)
+    print_variants(rows)
+
+
+def print_variants(rows):
+    print(f"{'variant':<50}{'median':>8}{'min':>8}{'max':>8}{'Aer':>7}{'valid':>7}"
+          f"{'CX(G)':>7}{'depth(G)':>9}{'CX(1)':>7}{'depth(1)':>9}")
+    for r in rows:
+        aer = f"{r['aer_P']:.1%}" if r["aer_P"] is not None else "-"
+        valid = f"{r['valid_shot_fraction']:.0%}" if r["valid_shot_fraction"] is not None else "-"
+        print(f"{r['variant']:<50}{r['exact_P_median']:>8.2%}{r['exact_P_min']:>8.2%}"
+              f"{r['exact_P_max']:>8.2%}{aer:>7}{valid:>7}{r['cx_grading']:>7}"
+              f"{r['depth_grading']:>9}{r['cx_opt1']:>7}{r['depth_opt1']:>9}")
 
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "2"
     if which == "1":
         round1("--no-aer" not in sys.argv)
+    elif which == "2-table":
+        round2_variants()
     else:
         round2()
