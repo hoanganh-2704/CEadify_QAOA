@@ -80,6 +80,32 @@ def solved_mask(cubes):
     return mask
 
 
+STARTER = REPO / "starter_notebook.ipynb"
+STARTER_NAMES = ("orientations", "solves", "make_puzzle", "count_answers")
+
+
+def load_starter(names=STARTER_NAMES):
+    """Exec only the named function definitions from the challenge's starter notebook,
+    so the bonus puzzle and its answer counter are the challenge's own code."""
+    import ast
+    import json
+    import random
+
+    module = ast.Module(body=[], type_ignores=[])
+    for cell in json.loads(STARTER.read_text(encoding="utf-8"))["cells"]:
+        if cell["cell_type"] == "code":
+            tree = ast.parse("".join(cell["source"]))
+            module.body += [node for node in tree.body
+                            if isinstance(node, ast.FunctionDef) and node.name in names]
+    namespace = {"itertools": itertools, "random": random, "CHOICES": CHOICES}
+    exec(compile(module, str(STARTER), "exec"), namespace)
+    return {name: namespace[name] for name in names}
+
+
+def starter_puzzle(n, seed):
+    return load_starter()["make_puzzle"](n, seed)
+
+
 def random_baselines(mask):
     """Chance that a uniform random legal pick / random 6N-bit string is solved."""
     n = mask.ndim

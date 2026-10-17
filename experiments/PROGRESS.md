@@ -26,10 +26,24 @@ random 24-bit string 2/2²⁴ ≈ 1.2 × 10⁻⁷.
 **Net change vs round 1:** exact P(solved) 26.246% → 35.12% (+8.87
 points, +34%); CX 4590 → 1958 (−57%). Random legal pick: 0.154%.
 
+**Ported into `solution.ipynb`** (two new sections after the 4-cube
+results; executed top to bottom, 3.6 min, no errors):
+- Reduced H: ZZ 265 → 77; exact on all 1,296 picks (error 0); 12-qubit
+  circuits match the old H to under 4 × 10⁻¹⁶; CX 4590 → 1958, depth
+  1683 → 908.
+- Gibbs, seeds 0–4: 35.12% median [35.11, 35.12]. The notebook's seed-3
+  angles equal the saved `round4.json` angles exactly (difference 0.0), and
+  the saved angles give 35.1165% **without retraining** ✅.
+- Aer, 1000 shots, seed 7: **343/1000 = 34.3%** solved, 1000/1000 valid,
+  1958 CX, depth 907.
+- The SV1 cell now prepares the improved circuit; `submit_job` is still
+  empty.
+- Classical tests: 9 new (exact decomposition, reduced H exact on 4-, 5- and
+  6-cube puzzles, no same-cube ZZ, Gibbs depends only on the cost histogram).
+  Classical suite 32 passed; with the experiment suites, 90 passed.
+
 **Still owed (from the teacher's final review):**
-- Port the accepted changes into the notebook and confirm it gives exactly
-  35.12% at the saved round-4 angles **without retraining**.
-- Add one seeded Aer shot rate, the baselines and the GRADING-call CX/depth
+- Add the Aer shot rate above, the baselines and the GRADING-call CX/depth
   to the README.
 - Every team member should be able to explain why P(solved) rose while the
   average cost got worse (2.12 → 2.73).
@@ -37,6 +51,21 @@ points, +34%); CX 4590 → 1958 (−57%). Random legal pick: 0.154%.
   `if` and can be skipped silently.
 
 Not done, by design: η tuning, more studies, any qBraid/SV1 run.
+
+## Round 5: the same recipe on the 5-cube bonus puzzle (running)
+
+**Teacher's question:** if nothing in the accepted recipe changes, how does
+it do on `make_puzzle(5, 16)`? That is 30 qubits, the largest size under
+SV1's 34-qubit limit. How do qubits, CX, depth and P(solved) grow from
+N = 4 to N = 5, against random guessing and brute force?
+
+**Student's test must check:** the cost-0 picks equal an independent
+`solves()` brute force and `count_answers`; H equals the cost on all 6⁵
+picks; every P(solved) recomputes from its saved angles.
+
+Report: seeds 0–2, exact P median/min/max, GRADING CX/depth, baselines,
+brute-force and training time. No Aer at 30 qubits (the statevector needs
+about 16 GB), no tuning, no speedup claim.
 
 ## Scoreboard
 

@@ -218,6 +218,79 @@ def test_decoder_rejects_strings_that_are_not_one_hot():
     assert NB["choices_from_bitstring"]("1" * 24, 4) is None
 
 
+# ---------------------------------------------------------------- improvement 1: reduced Hamiltonian
+
+@pytest.fixture(scope="module")
+def small_hamiltonian():
+    return NB["reduced_hamiltonian"](CUBES)
+
+
+def test_cost_splits_into_one_and_two_cube_tables_exactly(cost):
+    base, single, pair = NB["one_hot_decomposition"](CUBES)
+    for idx in itertools.product(range(6), repeat=len(CUBES)):
+        rebuilt = base + sum(single[c][k] for c, k in enumerate(idx))
+        rebuilt += sum(pair[c, d][idx[c], idx[d]] for c, d in itertools.combinations(range(4), 2))
+        assert rebuilt == pytest.approx(cost[idx], abs=1e-9)
+
+
+def test_reduced_hamiltonian_is_diagonal_and_at_most_quadratic(small_hamiltonian):
+    assert small_hamiltonian.num_qubits == 24
+    assert not small_hamiltonian.paulis.x.any()
+    assert small_hamiltonian.paulis.z.sum(axis=1).max() <= 2
+
+
+def test_reduced_hamiltonian_equals_cost_on_every_one_hot_string(small_hamiltonian, cost):
+    for idx in itertools.product(range(6), repeat=len(CUBES)):
+        assert z_energy(small_hamiltonian, one_hot_bits(idx)) == pytest.approx(cost[idx], abs=1e-9)
+
+
+def test_reduced_hamiltonian_has_fewer_two_qubit_terms(small_hamiltonian, hamiltonian):
+    assert NB["zz_count"](small_hamiltonian) < NB["zz_count"](hamiltonian)
+
+
+def test_reduced_hamiltonian_has_no_same_cube_zz(small_hamiltonian):
+    for row in small_hamiltonian.paulis.z:
+        qubits = np.flatnonzero(row)
+        if len(qubits) == 2:
+            assert qubits[0] // 6 != qubits[1] // 6
+
+
+@pytest.mark.parametrize("n,seed", [(5, 16), (6, 86)])
+def test_reduced_hamiltonian_is_exact_on_bonus_puzzles(n, seed):
+    puzzle = NB["make_puzzle"](n, seed)
+    tensor = NB["cost_tensor"](puzzle)
+    reduced = NB["reduced_hamiltonian"](puzzle)
+    rng = np.random.default_rng(seed)
+    for _ in range(300):
+        idx = tuple(int(k) for k in rng.integers(0, 6, n))
+        assert z_energy(reduced, one_hot_bits(idx)) == pytest.approx(tensor[idx], abs=1e-9)
+
+
+# ---------------------------------------------------------------- improvement 2: Gibbs objective
+
+def test_gibbs_objective_depends_only_on_the_cost_histogram(cost):
+    gibbs = NB["gibbs_objective"]
+    rng = np.random.default_rng(7)
+    probs = rng.random(cost.shape)
+    probs /= probs.sum()
+    shuffled = probs.copy()
+    for value in np.unique(cost):  # move probability around inside each equal-cost group
+        group = np.flatnonzero(cost.ravel() == value)
+        shuffled.ravel()[group] = rng.permutation(probs.ravel()[group])
+    assert gibbs(shuffled, cost) == pytest.approx(gibbs(probs, cost), abs=1e-12)
+
+
+def test_gibbs_objective_rewards_moving_weight_to_cost_zero(cost):
+    gibbs = NB["gibbs_objective"]
+    uniform = np.full(cost.shape, 1 / cost.size)
+    better = uniform.copy()
+    zero, worst = np.flatnonzero(cost.ravel() == 0)[0], np.argmax(cost.ravel())
+    better.ravel()[zero] += better.ravel()[worst]
+    better.ravel()[worst] = 0
+    assert gibbs(better, cost) < gibbs(uniform, cost)
+    assert gibbs(np.where(cost == 0, 0.5, 0.0), cost) == pytest.approx(-np.log(1.0), abs=1e-12)
+
+
 # ---------------------------------------------------------------- bonus puzzles
 
 @pytest.mark.parametrize("n,seed", sorted(BONUS_SEEDS.items()))

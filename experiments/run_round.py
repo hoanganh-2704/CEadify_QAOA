@@ -246,13 +246,69 @@ def round4():
     })
 
 
+# ---------------------------------------------------------------- round 5: same recipe on N = 5
+
+N5, PUZZLE_SEED5 = 5, 16
+ROUND5_SEEDS = (0, 1, 2)
+
+
+def brute_force_times(cubes):
+    """Time the starter's two brute forces: 24^N orientations and the 6^N graph cases."""
+    starter = S.load_starter()
+    t0 = time.perf_counter()
+    options = [starter["orientations"](cube) for cube in cubes]
+    towers = sum(1 for tower in itertools.product(*options) if starter["solves"](tower))
+    orient_s = time.perf_counter() - t0
+    t0 = time.perf_counter()
+    cases = starter["count_answers"](cubes)
+    count_s = time.perf_counter() - t0
+    print(f"brute force: {24 ** len(cubes):,} orientations -> {towers} towers in {orient_s:.1f}s; "
+          f"count_answers -> {cases} of {6 ** len(cubes):,} cases in {count_s:.2f}s")
+    return {"orientation_towers": towers, "orientation_s": orient_s,
+            "count_answers": cases, "count_answers_s": count_s}
+
+
+def round5():
+    cubes = S.starter_puzzle(N5, PUZZLE_SEED5)
+    costs, solved = S.cost_tensor(cubes), S.solved_mask(cubes)
+    assert np.array_equal(solved, np.isclose(costs, 0)), "cost zeros != solved towers"
+    brute = brute_force_times(cubes)
+    pairs = S.MIXERS["full"]
+    start = S.grid_p1(costs, solved, pairs=pairs)
+    runs = []
+    for seed in ROUND5_SEEDS:
+        t0 = time.perf_counter()
+        angles, curve = S.train_layerwise(costs, solved, P_MAX, pairs,
+                                          S.OBJECTIVES[ROUND4_OBJECTIVE],
+                                          jitter_seed=seed, jitter=JITTER, start=start)
+        runs.append({"seed": seed, "p_solved": curve[-1][2], "avg_cost": curve[-1][1],
+                     "train_s": time.perf_counter() - t0, "angles": angles.tolist()})
+        print(f"  seed {seed}: exact subspace P(solved) {curve[-1][2]:.4%}  "
+              f"<C> {curve[-1][1]:.4f}  {runs[-1]['train_s']:.0f}s")
+    ps = [r["p_solved"] for r in runs]
+    median_run = sorted(runs, key=lambda r: r["p_solved"])[len(runs) // 2]
+    angles = np.array(median_run["angles"])
+    H = S.reduced_hamiltonian(cubes, ROUND3_GAUGE)
+    circuit = S.tower_qaoa(cubes, H, angles[:P_MAX], angles[P_MAX:], pairs)
+    metrics = grading_metrics(circuit)[1]
+    print(f"median {np.median(ps):.4%}  min {min(ps):.4%}  max {max(ps):.4%}  {metrics}  "
+          f"{S.term_counts(H)}")
+    save("round5.json", {
+        "n": N5, "puzzle_seed": PUZZLE_SEED5, "cubes": cubes,
+        "objective": ROUND4_OBJECTIVE, "eta": 1.0, "mixer": "full",
+        "hamiltonian": f"reduced_{ROUND3_GAUGE}", **S.term_counts(H),
+        "jitter": JITTER, "p": P_MAX, "seeds": list(ROUND5_SEEDS), "grid_start": list(start),
+        "runs": runs, "median": float(np.median(ps)), "min": min(ps), "max": max(ps),
+        "p_solved_kind": "exact, 6^5 legal-subspace simulation (no Aer at 30 qubits)",
+        "circuit_angles_seed": median_run["seed"], **metrics,
+        "transpile_call": 'transpile(qc, basis_gates=["rz","sx","x","cx"])',
+        **S.random_baselines(solved), "brute_force": brute,
+    })
+
+
 if __name__ == "__main__":
-    which = sys.argv[1] if len(sys.argv) > 1 else "4"
+    which = sys.argv[1] if len(sys.argv) > 1 else "5"
     if which == "1":
         round1("--no-aer" not in sys.argv)
-    elif which == "2":
-        round2()
-    elif which == "3":
-        round3()
     else:
-        round4()
+        {"2": round2, "3": round3, "4": round4, "5": round5}[which]()
